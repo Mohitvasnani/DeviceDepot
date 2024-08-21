@@ -1,0 +1,156 @@
+body {
+    padding: 0;
+    margin: 0;
+}
+
+
+.register_form {
+    background-color: #b4bcc2 !important;
+    border: #3C5B6F;
+    color: #5BBCFF;
+}
+
+.footer-child a {
+    color: #ffff !important;
+    margin-bottom: 0.5%;
+
+}
+
+.navbar .navbar-nav .nav-item a {
+    padding: 15px;
+}
+
+#carouselExampleInterval img {
+    height: 40vh;
+}
+
+
+.card_icon i {
+    color: #fca311
+}
+
+.card_cont {
+    padding-left: 0 !important;
+}
+
+.card_cont .product_info {
+    width: 350px;
+}
+
+
+.home_banner img {
+    height: 400px;
+}
+
+.navbar_button {
+    padding: 0 !important;
+
+}
+
+.navbar_button .bi-cart {
+    padding: 30px;
+
+}
+
+.navbar_button .bi-person-circle {
+    padding: 30px;
+}
+
+.navbar_button .bi-bookmark-heart {
+    padding: 30px;
+}
+.main_img img{
+    height: 400px;
+    
+}
+.bottom_img img{
+    height: 100px;   
+    
+}
+.detail_displayarea{
+    width: 840px;
+    height: auto;
+}
+.userdash {
+  background-color: #343a40;
+  color: #ffffff;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  min-height: 100vh !important;
+}
+
+.dashboard_area {
+  padding: 20px;
+  background: linear-gradient(135deg, #6e48aa, #9d50bb);
+  font-family: 'Roboto', sans-serif;
+  max-height: 100vh;
+  overflow-y: auto;
+
+}
+
+/* admin_dashboard.css */
+
+.user_dash_items ul {
+  padding: 0;
+  margin: 0;
+}
+
+.user_dash_items li {
+  list-style: none;
+}
+
+.dash_nav_admin {
+  display: block;
+  padding: 10px 15px;
+  color: #fff;
+  background-color: #343a40;
+  border-radius: 5px;
+  text-align: center;
+  transition: background-color 0.3s, box-shadow 0.3s;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+.dash_nav_admin:hover {
+  background-color: #495057;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dash_nav_admin.active {
+  background-color: #495057;
+}
+
+.badge-primary {
+  background-color: #007bff;
+}
+  @media (max-width: 992px) {
+    .userdash {
+      text-align: center;
+    }
+  
+    .user_dash_items ul {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  
+    .user_dash_items li {
+      margin-bottom: 10px;
+      width: auto;
+    }
+  
+    .dash_nav_admin {
+      width: auto;
+    }
+  }
+  .appf{
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  footer{
+    margin-top: auto;
+  }
+  

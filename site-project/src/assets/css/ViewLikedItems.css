@@ -1,0 +1,23 @@
+/* ViewLikedItems.css */
+
+.container-liked {
+    max-width: 1200px;
+    margin: auto;
+}
+
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+.bi-heart-fill {
+    cursor: pointer;
+}
