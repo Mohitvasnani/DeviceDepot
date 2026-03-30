@@ -37,7 +37,7 @@ const userLogin = (req, res) => {
           }
 
           // Generate JWT token
-          const token = jwt.sign({ email: user.email, role: user.role }, 'yourSecretKey', { expiresIn: '1h' });
+          const token = jwt.sign({ email: user.email, role: user.role }, process.env.SECRET_KEY, { expiresIn: '1h' });
           res.cookie('token', token)
           return res.json({ token });
         })

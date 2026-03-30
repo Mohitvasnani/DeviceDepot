@@ -1,4 +1,5 @@
 const express = require('express')
+const { protect, adminOnly } = require('../middleware/authMiddleware');
 const {
     createUser,
     userLogin,
@@ -11,17 +12,19 @@ const {
 updateUser
  }= require('../controller/userCtrl');
 const router = express.Router();
+// Public - no auth needed
 router.post("/register", createUser);
 router.post("/login", userLogin);
-router.get("/users", getAllUsers);
-router.get("/getuser/:id", getUserById);
 router.post("/logout", logout);
-router.delete("/deluser/:id", deleteUser);
-router.put("/updaterole/:id", manageRole);
-router.put("/updatedata/:id", updateUser);
-// Fetch user profile by email
-router.get('/profile/:email', getUserProfile);
 
-// Update user profile
-router.put('/updateprofile/:id', updateUserProfile);
+// Protected - must be logged in
+router.get("/getuser/:id", protect, getUserById);
+router.get('/profile/:email', protect, getUserProfile);
+router.put('/updateprofile/:id', protect, updateUserProfile);
+router.put("/updatedata/:id", protect, updateUser);
+
+// Admin only
+router.get("/users", protect, adminOnly, getAllUsers);
+router.delete("/deluser/:id", protect, adminOnly, deleteUser);
+router.put("/updaterole/:id", protect, adminOnly, manageRole);
 module.exports= router;

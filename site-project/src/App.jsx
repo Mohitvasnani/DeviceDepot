@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import './App.css';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import ProtectedRoute from './assets/components/ProtectedRoute';
 import Navbar from './assets/components/Navbar';
 import Footer from './assets/components/Footer';
 import LoginRegisterPage from './assets/screens/Login_registerpage';
@@ -30,6 +30,7 @@ import AddProducts from './assets/admin/Addproducts';
 import Userdashboard from './assets/user/Userdashboard';
 import UserProfile from './assets/user/UserProfile';
 
+
 function App() {
   const [userCount, setUserCount] = useState(0);
 
@@ -41,10 +42,11 @@ function App() {
       <Router>
         <Navbar  />
         <Routes>
+          <Route path='/' element={<Navigate to='/home' />} />
           <Route path='/loginregister' element={<LoginRegisterPage />}></Route>
           <Route path='/home' element={<Home />}></Route>
           <Route path='/about' element={<Aboutus />}></Route>
-          <Route path="/admin/*" element={<Admindashboard setUserCount={setUserCount} userCount={userCount} />}>
+          <Route path="/admin/*" element={<ProtectedRoute adminOnly={true}><Admindashboard setUserCount={setUserCount} userCount={userCount} /></ProtectedRoute>}>
             <Route path="mngproducts" element={<ManageProducts />} />
             <Route path="vieworders" element={<ViewOrders />} />
             <Route path="viewusers" element={<Viewproducts />} />
@@ -56,7 +58,7 @@ function App() {
           <Route path='/accessories' element={<Accessories />}></Route>
           <Route path='/mobile' element={<Mobiles />}></Route>
           <Route path='/laptop' element={<Laptops />}></Route>
-          <Route path='/userdash/*' element={<Userdashboard />}>
+          <Route path='/userdash/*' element={<ProtectedRoute><Userdashboard /></ProtectedRoute>}>
             <Route path="userprofile" element={<UserProfile />} />
             <Route path="trackorder" element={<TrackOrders />} />
           </Route>
