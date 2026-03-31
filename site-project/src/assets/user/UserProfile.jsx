@@ -31,7 +31,7 @@ function UserProfile() {
 
   const fetchUserProfile = async (email) => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/user/profile/${email}`);
+      const response = await axios.get(`${API_URL}/api/user/profile/${email}`);
       setUser(response.data);
       setUpdatedInfo({
         name: response.data.name,
@@ -56,7 +56,7 @@ function UserProfile() {
 
   const handleSave = async () => {
     try {
-      await axios.put(`http://localhost:8080/api/user/updateprofilebyemail/${user.email}`, updatedInfo);
+      await axios.put(`${API_URL}/api/user/updateprofilebyemail/${user.email}`, updatedInfo);
       toast.success('Profile updated successfully', { className: 'toast-success' });
       setEditing(false);
       fetchUserProfile(user.email);

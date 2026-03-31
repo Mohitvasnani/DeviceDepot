@@ -12,7 +12,7 @@ function Home() {
 
   const fetchBanners = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/banner/getbanner');
+      const response = await axios.get('${API_URL}/api/banner/getbanner');
       setBanners(response.data);
     } catch (error) {
       console.error('Error fetching banners', error);
@@ -21,7 +21,7 @@ function Home() {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/product/allproducts');
+      const response = await axios.get('${API_URL}/api/product/allproducts');
       setProducts(response.data);
       setLength(response.data.length);
 

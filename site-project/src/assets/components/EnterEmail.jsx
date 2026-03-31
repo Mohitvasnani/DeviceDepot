@@ -13,7 +13,7 @@ const EnterEmail = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8080/api/emails/send-otp', { email });
+      const response = await axios.post('${API_URL}/api/emails/send-otp', { email });
       setMessage(response.data.message);
       navigate('/enter-otp', { state: { email } }); // Navigate to EnterOTP page with email state
     } catch (error) {

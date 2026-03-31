@@ -11,7 +11,7 @@ function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await axios.post('http://localhost:8080/api/user/logout');
+      await axios.post('${API_URL}/api/user/logout');
       localStorage.removeItem('token');
       localStorage.removeItem('email');
 

@@ -7,19 +7,16 @@ const purchase = async (req, res) => {
     try {
         const { email, status, address, totalAmount, file } = req.body;
 
-        // Find the user by email
         const user = await userModel.findOne({ email });
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Find the cart for the user
         const cart = await cartModel.findOne({ userId: user._id }).populate('items.productId');
         if (!cart) {
             return res.status(404).json({ error: 'Cart not found' });
         }
 
-        // Prepare order items from the cart
         const orderItems = cart.items.map(item => ({
             productId: item.productId._id,
             quantity: item.quantity,
@@ -28,21 +25,17 @@ const purchase = async (req, res) => {
             price: item.productId.price
         }));
 
-        // Create a new order
         const newOrder = new orderModel({
             userId: user._id,
             email,
             items: orderItems,
-            status,
+            status: status || 'pending',
             address,
-            totalAmount, // Corrected the spelling here
+            totalAmount,
             file
         });
 
-        // Save the order
         const savedOrder = await newOrder.save();
-
-        // Delete the cart after creating the order
         await cartModel.findByIdAndDelete(cart._id);
 
         res.status(201).json(savedOrder);
@@ -51,7 +44,6 @@ const purchase = async (req, res) => {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
-
 
 const cancelOrder = async (req, res) => {
     const { email, orderId } = req.body;
@@ -88,13 +80,14 @@ const allOrders = async (req, res) => {
     }
 };
 
-
-
 const viewOrder = async (req, res) => {
     const { orderId, email } = req.body;
 
     try {
-        const order = await orderModel.findOne({ _id: orderId, email }).populate('items.productId').populate('userId');
+        const order = await orderModel
+            .findOne({ _id: orderId, email })
+            .populate('items.productId')
+            .populate('userId');
 
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
@@ -106,11 +99,13 @@ const viewOrder = async (req, res) => {
     }
 };
 
-
-
 const getAllOrdersForAdmin = async (req, res) => {
     try {
-        const orders = await orderModel.find({}).populate('items.productId').populate('userId'); // Populate fields if needed
+        const orders = await orderModel
+            .find({})
+            .populate('userId')
+            .populate('items.productId')
+            .sort({ orderTime: -1 }); // newest orders first
 
         res.status(200).json(orders);
     } catch (error) {
@@ -119,10 +114,39 @@ const getAllOrdersForAdmin = async (req, res) => {
     }
 };
 
+// 🆕 New function — update order status from admin dashboard
+const updateOrderStatus = async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+
+    if (!validStatuses.includes(status)) {
+        return res.status(400).json({ message: 'Invalid status value' });
+    }
+
+    try {
+        const order = await orderModel.findByIdAndUpdate(
+            id,
+            { status },
+            { new: true }
+        );
+
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        res.status(200).json({ message: 'Order status updated', order });
+    } catch (error) {
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
+};
+
 module.exports = {
     purchase,
     cancelOrder,
     viewOrder,
     allOrders,
-    getAllOrdersForAdmin
+    getAllOrdersForAdmin,
+    updateOrderStatus
 };

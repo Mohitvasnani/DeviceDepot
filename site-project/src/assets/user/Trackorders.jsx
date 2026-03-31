@@ -24,7 +24,7 @@ function TrackOrders() {
 
   const fetchOrders = async (email) => {
     try {
-      const response = await axios.post('http://localhost:8080/api/orders/allorders', { email });
+      const response = await axios.post('${API_URL}/api/orders/allorders', { email });
       setOrders(response.data);
       setLoading(false);
     } catch (error) {
@@ -36,7 +36,7 @@ function TrackOrders() {
 
   const cancelOrder = async (orderId) => {
     try {
-      await axios.put('http://localhost:8080/api/orders/cancel', { email: userEmail, orderId });
+      await axios.put('${API_URL}/api/orders/cancel', { email: userEmail, orderId });
       toast.success('Order cancelled successfully', { className: 'toast-success' });
       fetchOrders(userEmail);
     } catch (error) {

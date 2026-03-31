@@ -15,7 +15,7 @@ const EnterOTP = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8080/api/emails/verify-otp', { email, otp });
+      const response = await axios.post('${API_URL}/api/emails/verify-otp', { email, otp });
       setMessage(response.data.message);
       navigate('/enter-new-password', { state: { email, otp } }); // Navigate to EnterNewPassword page with email and otp state
     } catch (error) {

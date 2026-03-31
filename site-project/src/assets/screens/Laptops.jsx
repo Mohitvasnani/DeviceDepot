@@ -103,14 +103,14 @@ export default Laptops
 //     };
 
 //     const fetchProducts = () =>{
-//         axios.get('http://localhost:8080/api/product/allproducts')
+//         axios.get('${API_URL}/api/product/allproducts')
 //         .then(response=>{
 //             setProducts(response.data)
 //         }).catch(error=>{
 //             console.log(error);
 //         })
 //         // try {
-//         //     const response = axios.get('http://localhost:8080/api/product/allproducts')
+//         //     const response = axios.get('${API_URL}/api/product/allproducts')
 //         //     setProducts(response.data)
 //         // } catch (error) {
             

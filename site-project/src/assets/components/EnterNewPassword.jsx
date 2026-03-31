@@ -15,7 +15,7 @@ const EnterNewPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8080/api/emails/change-password', {
+      const response = await axios.post('${API_URL}/api/emails/change-password', {
         email,
         otp,
         newPassword,

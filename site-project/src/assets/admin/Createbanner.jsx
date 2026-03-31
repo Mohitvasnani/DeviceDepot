@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../css/CreateBanner.css'; 
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function CreateBanner() {
     const [image, setImage] = useState(null);
     const [newBanner, setNewBanner] = useState({
@@ -34,7 +36,7 @@ function CreateBanner() {
         formData.append('description', newBanner.description);
         formData.append('file', newBanner.file);
 
-        axios.post('http://localhost:8080/api/banner/upload', formData)
+        axios.post(`${API_URL}/api/banner/upload`, formData)
             .then(response => {
                 console.log(response.data);
                 setNewBanner({

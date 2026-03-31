@@ -1,25 +1,23 @@
 const express = require('express')
 const router = express.Router()
-const{
+const {
     purchase,
     cancelOrder,
     viewOrder,
     allOrders,
-    getAllOrdersForAdmin
+    getAllOrdersForAdmin,
+    updateOrderStatus
 } = require('../controller/orderCtrl')
+const { protect, adminOnly } = require('../middleware/authMiddleware')
 
-// Route for purchasing items (creating an order)
-router.post('/purchase', purchase);
+// User routes
+router.post('/purchase', protect, purchase);
+router.put('/cancel', protect, cancelOrder);
+router.post('/allorders', protect, allOrders);
+router.post('/view', protect, viewOrder);
 
-// Route for cancelling an order
-router.put('/cancel', cancelOrder);
-
-// Route for viewing all orders of a specific user
-router.post('/allorders', allOrders);
-// Route for viewing a specific order
-router.post('/view', viewOrder);
-
-router.get('/getall', getAllOrdersForAdmin);
-
+// Admin routes
+router.get('/getall', protect, adminOnly, getAllOrdersForAdmin);
+router.put('/updatestatus/:id', protect, adminOnly, updateOrderStatus);
 
 module.exports = router;

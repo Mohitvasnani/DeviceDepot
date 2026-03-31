@@ -16,7 +16,7 @@ function Productdisplay() {
       return;
     }
     try {
-      const response = await axios.post('http://localhost:8080/api/product/addcart', {
+      const response = await axios.post('${API_URL}/api/product/addcart', {
         productId,
         email: userEmail
       });
@@ -37,7 +37,7 @@ function Productdisplay() {
       return;
     }
     try {
-      const response = await axios.post('http://localhost:8080/api/product/addlike', {
+      const response = await axios.post('${API_URL}/api/product/addlike', {
         productId,
         email: userEmail
       });
@@ -59,7 +59,7 @@ function Productdisplay() {
       return;
     }
     try {
-      const response = await axios.delete('http://localhost:8080/api/product/removelike', {
+      const response = await axios.delete('${API_URL}/api/product/removelike', {
         data: {
           productId,
           email: userEmail

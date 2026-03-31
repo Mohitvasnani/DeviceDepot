@@ -19,7 +19,7 @@ const Cart = () => {
 
   const fetchCartItems = async (email) => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/product/allcart?email=${email}`);
+      const response = await axios.get(`${API_URL}/api/product/allcart?email=${email}`);
       setCartItems(response.data.items);
     } catch (error) {
       console.error('Error fetching cart items:', error);
@@ -27,7 +27,7 @@ const Cart = () => {
   };
   const removeItem = async (itemId) => {
     try {
-      const response = await axios.delete(`http://localhost:8080/api/product/remove/${itemId}`);
+      const response = await axios.delete(`${API_URL}/api/product/remove/${itemId}`);
       setCartItems(response.data.cart.items); 
     } catch (error) {
       console.error('Error removing item:', error);
@@ -37,7 +37,7 @@ const Cart = () => {
 
   const increment = async (itemId) => {
     try {
-      const response = await axios.post(`http://localhost:8080/api/product/increment/${itemId}`);
+      const response = await axios.post(`${API_URL}/api/product/increment/${itemId}`);
       setCartItems(response.data.cart.items);
     } catch (error) {
       console.error('Error incrementing quantity:', error);
@@ -47,7 +47,7 @@ const Cart = () => {
 
   const decrement = async (itemId) => {
     try {
-      const response = await axios.post(`http://localhost:8080/api/product/decrement/${itemId}`);
+      const response = await axios.post(`${API_URL}/api/product/decrement/${itemId}`);
       setCartItems(response.data.cart.items);
     } catch (error) {
       console.error('Error decrementing quantity:', error);
@@ -71,7 +71,7 @@ const Cart = () => {
     const totalAmount = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
     try {
-      const response = await axios.post('http://localhost:8080/api/orders/purchase', {
+      const response = await axios.post('${API_URL}/api/orders/purchase', {
         email,
         status: 'pending',
         address,
