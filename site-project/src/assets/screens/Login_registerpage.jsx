@@ -2,29 +2,27 @@ import React, { useState } from 'react';
 import '../css/register.css';
 import axios from 'axios';
 import { NavLink, useNavigate } from 'react-router-dom';
-import {jwtDecode} from 'jwt-decode'; // Correct import statement
+import {jwtDecode} from 'jwt-decode';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function LoginRegisterPage() {
     const [isRegisterActive, setIsRegisterActive] = useState(false);
-
-    const handleRegisterClick = () => {
-        setIsRegisterActive(true);
-    };
-
-    const handleLoginClick = () => {
-        setIsRegisterActive(false);
-    };
-
-    // State variables for registration form
     const [isName, setName] = useState('');
     const [isEmail, setEmail] = useState('');
     const [isNumber, setNumber] = useState('');
     const [isPassword, setPassword] = useState('');
     const [emailError, setEmailError] = useState('');
+    const [isLoginEmail, setLoginEmail] = useState('');
+    const [isLoginPassword, setLoginPassword] = useState('');
 
-    // Regular expression for basic email validation
+    const navigate = useNavigate();
+
+    const handleRegisterClick = () => setIsRegisterActive(true);
+    const handleLoginClick = () => setIsRegisterActive(false);
+
     const validateEmail = (email) => {
         const re = /\S+@\S+\.\S+/;
         return re.test(email);
@@ -33,20 +31,23 @@ function LoginRegisterPage() {
     const handleSubmitRegister = (e) => {
         e.preventDefault();
 
-        // Validate email
         if (!validateEmail(isEmail)) {
             setEmailError('Please enter a valid email address.');
             return;
         }
-
-        // Reset email error if previously set
         setEmailError('');
 
-        const formData = { name: isName, email: isEmail, phone: isNumber, password: isPassword };
+        const formData = { 
+            name: isName, 
+            email: isEmail, 
+            phone: isNumber, 
+            password: isPassword 
+        };
 
-        axios.post('http://localhost:8080/api/user/register', formData, { withCredentials: true })
+        axios.post(`${API_URL}/api/user/register`, formData)
             .then(result => {
-                toast.success('Registration successful!');
+                toast.success('Registration successful! Please sign in.');
+                setIsRegisterActive(false);
                 console.log(result);
             })
             .catch(err => {
@@ -55,38 +56,29 @@ function LoginRegisterPage() {
             });
     };
 
-    // State variables for login form
-    const [isLoginEmail, setLoginEmail] = useState('');
-    const [isLoginPassword, setLoginPassword] = useState('');
-
-    const navigate = useNavigate();
-
-    axios.defaults.withCredentials = true;
-
     const handleLogin = (e) => {
         e.preventDefault();
-        axios.post("http://localhost:8080/api/user/login", { email: isLoginEmail, password: isLoginPassword }, { withCredentials: true })
+        axios.post(`${API_URL}/api/user/login`, { 
+            email: isLoginEmail, 
+            password: isLoginPassword 
+        })
             .then(response => {
                 const { token } = response.data;
                 localStorage.setItem('token', token);
                 localStorage.setItem('email', isLoginEmail);
-                console.log(response);
-                const decodedToken = jwtDecode(token);
 
+                const decodedToken = jwtDecode(token);
                 toast.success('Login successful!');
 
                 if (decodedToken.role === 'admin') {
-                    navigate('/admin/*');
-                } else if (decodedToken.role === 'user') {
-                    navigate('/home');
+                    navigate('/admin');   
                 } else {
-                    console.error('Invalid role received from server');
+                    navigate('/home');
                 }
             })
             .catch(error => {
                 if (error.response && error.response.status === 401) {
-                    toast.error('Invalid credentials');
-                    console.error('Invalid credentials');
+                    toast.error('Invalid email or password');
                 } else {
                     toast.error('Error during login. Please try again.');
                     console.error('Error during login:', error.message);
@@ -101,12 +93,6 @@ function LoginRegisterPage() {
                 <div className="form-container sign-up">
                     <form onSubmit={handleSubmitRegister}>
                         <h1>Create Account</h1>
-                        {/* <div className="social-icons">
-                            <a href="#" className="icon"><i className="fa-brands fa-google-plus-g"></i></a>
-                            <a href="#" className="icon"><i className="fa-brands fa-facebook-f"></i></a>
-                            <a href="#" className="icon"><i className="fa-brands fa-github"></i></a>
-                            <a href="#" className="icon"><i className="fa-brands fa-linkedin-in"></i></a>
-                        </div> */}
                         <span>or use your email for registration</span>
                         <input type="text" placeholder="Name" onChange={(e) => setName(e.target.value)} />
                         <input type="email" placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
@@ -119,13 +105,7 @@ function LoginRegisterPage() {
                 <div className="form-container sign-in">
                     <form onSubmit={handleLogin}>
                         <h1>Sign In</h1>
-                        {/* <div className="social-icons">
-                            <a href="#" className="icon"><i className="fa-brands fa-google-plus-g"></i></a>
-                            <a href="#" className="icon"><i className="fa-brands fa-facebook-f"></i></a>
-                            <a href="#" className="icon"><i className="fa-brands fa-github"></i></a>
-                            <a href="#" className="icon"><i className="fa-brands fa-linkedin-in"></i></a>
-                        </div> */}
-                        <span>or use your email for password</span>
+                        <span>or use your email password</span>
                         <input type="email" placeholder="Email" onChange={(e) => setLoginEmail(e.target.value)} />
                         <input type="password" placeholder="Password" onChange={(e) => setLoginPassword(e.target.value)} />
                         <NavLink to={'/enter-email'}>Forget Your Password?</NavLink>

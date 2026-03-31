@@ -3,6 +3,8 @@ import axios from 'axios';
 
 export const ProductsContext = createContext();
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export const ProductsProvider = ({ children }) => {
     const [likedProducts, setLikedProducts] = useState({});
     const [products, setProducts] = useState([]);
@@ -11,12 +13,13 @@ export const ProductsProvider = ({ children }) => {
 
     useEffect(() => {
         fetchProducts();
-        fetchLikedProducts();
+        const userEmail = localStorage.getItem('email');
+        if (userEmail) fetchLikedProducts();
     }, []);
 
     const fetchProducts = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/product/allproducts');
+            const response = await axios.get(`${API_URL}/api/product/allproducts`);
             setProducts(response.data);
         } catch (error) {
             setError(error.message);
@@ -26,18 +29,15 @@ export const ProductsProvider = ({ children }) => {
 
     const fetchLikedProducts = async () => {
         const userEmail = localStorage.getItem('email');
-        if (!userEmail) {
-            console.error('User email not found in local storage.');
-            return;
-        }
+        if (!userEmail) return;
         try {
-            const response = await axios.get(`http://localhost:8080/api/product/getlike/${userEmail}`);
+            const response = await axios.get(`${API_URL}/api/product/getlike/${userEmail}`);
             const likes = response.data.reduce((acc, product) => {
                 acc[product.productId] = true;
                 return acc;
             }, {});
             setLikedProducts(likes);
-            setLikedItems(response.data); // Set the liked items state
+            setLikedItems(response.data);
         } catch (error) {
             setError(error.message);
             console.error('Error fetching liked products:', error);
@@ -51,7 +51,7 @@ export const ProductsProvider = ({ children }) => {
             return;
         }
         try {
-            const response = await axios.post('http://localhost:8080/api/product/addcart', {
+            const response = await axios.post(`${API_URL}/api/product/addcart`, {
                 productId,
                 email: userEmail
             });
@@ -72,7 +72,7 @@ export const ProductsProvider = ({ children }) => {
             return;
         }
         try {
-            const response = await axios.post('http://localhost:8080/api/product/addlike', {
+            const response = await axios.post(`${API_URL}/api/product/addlike`, {
                 productId,
                 email: userEmail
             });
@@ -94,11 +94,8 @@ export const ProductsProvider = ({ children }) => {
             return;
         }
         try {
-            const response = await axios.delete('http://localhost:8080/api/product/removelike', {
-                data: {
-                    productId,
-                    email: userEmail
-                }
+            const response = await axios.delete(`${API_URL}/api/product/removelike`, {
+                data: { productId, email: userEmail }
             });
             if (response.data.success) {
                 console.log('Product unliked');
@@ -107,7 +104,9 @@ export const ProductsProvider = ({ children }) => {
                     delete newState[productId];
                     return newState;
                 });
-                setLikedItems(prevState => prevState.filter(item => item.productId !== productId));
+                setLikedItems(prevState => 
+                    prevState.filter(item => item.productId !== productId)
+                );
             } else {
                 console.error('Failed to remove like');
             }
@@ -124,7 +123,15 @@ export const ProductsProvider = ({ children }) => {
     };
 
     return (
-        <ProductsContext.Provider value={{ products, likedProducts, likedItems, removeLike, addToCart, addLike, fetchLikedProducts }}>
+        <ProductsContext.Provider value={{ 
+            products, 
+            likedProducts, 
+            likedItems, 
+            removeLike, 
+            addToCart, 
+            addLike, 
+            fetchLikedProducts 
+        }}>
             {children}
         </ProductsContext.Provider>
     );
