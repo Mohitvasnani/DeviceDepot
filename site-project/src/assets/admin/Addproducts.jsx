@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import '../css/AddProducts.css'; // Import custom CSS for AddProducts
+import '../css/AddProducts.css';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 function AddProducts() {
-    const [images, setImages] = useState([null, null, null, null]); // State to store 4 image URLs
+    const [images, setImages] = useState([null, null, null, null]);
+    const [loading, setLoading] = useState(false);
     const [newProduct, setNewProduct] = useState({
         name: '',
         rating: '',
@@ -16,7 +21,7 @@ function AddProducts() {
         instock: true,
         price: '',
         categories: '',
-        files: [null, null, null, null] // State to store 4 file objects
+        files: [null, null, null, null]
     });
 
     const handleImageChange = (e, index) => {
@@ -40,47 +45,64 @@ function AddProducts() {
         setNewProduct({ ...newProduct, [name]: value });
     };
 
-    const handleCreateProduct = (e) => {
+    const handleCreateProduct = async (e) => {
         e.preventDefault();
+
+        // Validate at least one image uploaded
+        const hasImage = newProduct.files.some(file => file !== null);
+        if (!hasImage) {
+            toast.error('Please upload at least one product image.');
+            return;
+        }
+
         const formData = new FormData();
         for (let key in newProduct) {
             if (key === 'files') {
                 newProduct.files.forEach(file => {
-                    if (file) {
-                        formData.append('files', file);
-                    }
+                    if (file) formData.append('files', file);
                 });
             } else {
                 formData.append(key, newProduct[key]);
             }
         }
 
-        axios.post('http://localhost:8080/api/product/addproduct', formData)
-            .then(response => {
-                console.log(response.data);
-                setNewProduct({
-                    name: '',
-                    rating: '',
-                    description: '',
-                    feature1: '',
-                    feature2: '',
-                    feature3: '',
-                    quantity: '',
-                    instock: true,
-                    price: '',
-                    categories: '',
-                    files: [null, null, null, null]
-                });
-                setImages([null, null, null, null]);
-                alert('Product added successfully!');
-            }).catch(error => {
-                console.error('There was an error adding the product!', error);
-                alert('Failed to add product.');
+        const token = localStorage.getItem('token');
+
+        try {
+            setLoading(true);
+            await axios.post(`${API_URL}/api/product/addproduct`, formData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
             });
+
+            toast.success('Product added successfully!');
+            setNewProduct({
+                name: '',
+                rating: '',
+                description: '',
+                feature1: '',
+                feature2: '',
+                feature3: '',
+                quantity: '',
+                instock: true,
+                price: '',
+                categories: '',
+                files: [null, null, null, null]
+            });
+            setImages([null, null, null, null]);
+        } catch (error) {
+            console.error('Error adding product:', error);
+            toast.error('Failed to add product. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <div className="container mt-5">
+            <ToastContainer />
             <div className="card-admin shadow p-4 product-form">
                 <h2 className="mb-4 text-center">Add New Product</h2>
                 <form onSubmit={handleCreateProduct} className="row g-2">
@@ -103,6 +125,8 @@ function AddProducts() {
                             className="form-control"
                             id="rating"
                             name="rating"
+                            min="1"
+                            max="5"
                             value={newProduct.rating}
                             onChange={handleInputChange}
                             required
@@ -164,6 +188,7 @@ function AddProducts() {
                             className="form-control"
                             id="quantity"
                             name="quantity"
+                            min="0"
                             value={newProduct.quantity}
                             onChange={handleInputChange}
                             required
@@ -176,6 +201,7 @@ function AddProducts() {
                             className="form-control"
                             id="price"
                             name="price"
+                            min="0"
                             value={newProduct.price}
                             onChange={handleInputChange}
                             required
@@ -183,20 +209,23 @@ function AddProducts() {
                     </div>
                     <div className="col-md-12 mb-3">
                         <label htmlFor="categories" className="form-label">Categories</label>
-                        <input
-                            type="text"
+                        <select
                             className="form-control"
                             id="categories"
                             name="categories"
                             value={newProduct.categories}
                             onChange={handleInputChange}
                             required
-                        />
+                        >
+                            <option value="">Select a category</option>
+                            <option value="mobile">Mobile</option>
+                            <option value="laptop">Laptop</option>
+                            <option value="accessories">Accessories</option>
+                        </select>
                     </div>
                     <div className="col-md-12 mb-3">
-                        <label htmlFor="upload-button" className="form-label">Upload Images</label>
+                        <label className="form-label">Upload Images</label>
                         <div className="d-flex align-items-center">
-                            {/* Four multiple file upload boxes */}
                             {[...Array(4)].map((_, index) => (
                                 <div key={index} className="upload-box me-3">
                                     <input
@@ -223,7 +252,13 @@ function AddProducts() {
                         </div>
                     </div>
                     <div className="col-md-12 text-center">
-                        <button type="submit" className="btn btn-primary btn-lg">Submit</button>
+                        <button 
+                            type="submit" 
+                            className="btn btn-primary btn-lg"
+                            disabled={loading}
+                        >
+                            {loading ? 'Adding Product...' : 'Add Product'}
+                        </button>
                     </div>
                 </form>
             </div>
