@@ -15,12 +15,13 @@ connection();
 
 const app = express();
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://device-depot-gilt.vercel.app'
+];
+
 const corsOptions = {
   origin: function (origin, callback) {
-    const allowedOrigins = [
-      'http://localhost:5173',
-      process.env.FRONTEND_API
-    ];
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
