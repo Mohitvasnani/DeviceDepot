@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer')
 const crypto = require('crypto');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const User = require('../models/userModels')
 const {setOtp, getOtp, deleteOtp } = require('../otpStore')
 require('dotenv').config()
