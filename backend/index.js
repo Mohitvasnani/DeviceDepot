@@ -16,10 +16,19 @@ connection();
 const app = express();
 
 const corsOptions = {
-  origin: 'http://localhost:5173',
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:5173',
+      process.env.FRONTEND_API
+    ];
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 };
-
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
