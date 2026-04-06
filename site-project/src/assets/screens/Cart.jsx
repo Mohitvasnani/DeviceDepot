@@ -5,7 +5,11 @@ import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
+import CheckoutForm from '../components/CheckoutForm';
 
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 const API_URL = import.meta.env.VITE_API_URL;
 
 const Cart = () => {
@@ -14,8 +18,9 @@ const Cart = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(true);
   const [checkingOut, setCheckingOut] = useState(false);
+  const [clientSecret, setClientSecret] = useState('');
+  const [showPayment, setShowPayment] = useState(false);
   const navigate = useNavigate();
-
   const token = localStorage.getItem('token');
 
   useEffect(() => {
@@ -68,7 +73,6 @@ const Cart = () => {
       );
       setCartItems(response.data.cart.items);
     } catch (error) {
-      console.error('Error incrementing quantity:', error);
       toast.error('Failed to update quantity');
     }
   };
@@ -82,7 +86,6 @@ const Cart = () => {
       );
       setCartItems(response.data.cart.items);
     } catch (error) {
-      console.error('Error decrementing quantity:', error);
       toast.error('Failed to update quantity');
     }
   };
@@ -99,6 +102,26 @@ const Cart = () => {
 
     try {
       setCheckingOut(true);
+      const response = await axios.post(
+        `${API_URL}/api/payments/create-payment-intent`,
+        { amount: totalAmount },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setClientSecret(response.data.clientSecret);
+      setShowPayment(true);
+    } catch (error) {
+      toast.error('Failed to initialise payment');
+    } finally {
+      setCheckingOut(false);
+    }
+  };
+
+  const handlePaymentSuccess = async () => {
+    const totalAmount = cartItems.reduce(
+      (acc, item) => acc + item.price * item.quantity, 0
+    );
+
+    try {
       await axios.post(
         `${API_URL}/api/orders/purchase`,
         {
@@ -113,12 +136,10 @@ const Cart = () => {
       toast.success('Order placed successfully!');
       setCartItems([]);
       setAddress('');
+      setShowPayment(false);
       setTimeout(() => navigate('/userdash/trackorder'), 1500);
     } catch (error) {
-      console.error('Error placing order:', error);
-      toast.error('Failed to place order. Please try again.');
-    } finally {
-      setCheckingOut(false);
+      toast.error('Order placement failed. Contact support.');
     }
   };
 
@@ -232,6 +253,7 @@ const Cart = () => {
               />
             </div>
           </div>
+
           <div className="col-md-6">
             <div className="cart-totals">
               <div className="totals">
@@ -239,13 +261,34 @@ const Cart = () => {
                 <p>Shipping: <strong>Free</strong></p>
                 <p>Total: <strong>£{subtotal.toFixed(2)}</strong></p>
               </div>
-              <button
-                className="checkout-btn"
-                onClick={handleCheckout}
-                disabled={checkingOut}
-              >
-                {checkingOut ? 'Placing Order...' : 'Proceed to Checkout'}
-              </button>
+
+              {!showPayment ? (
+                <button
+                  className="checkout-btn"
+                  onClick={handleCheckout}
+                  disabled={checkingOut}
+                >
+                  {checkingOut ? 'Preparing Payment...' : 'Proceed to Checkout'}
+                </button>
+              ) : (
+                <div className="mt-3 p-3 border rounded">
+                  <h5 className="mb-3">Complete Payment</h5>
+                  {clientSecret && (
+                    <Elements
+                      stripe={stripePromise}
+                      options={{ clientSecret }}
+                    >
+                      <CheckoutForm onSuccess={handlePaymentSuccess} />
+                    </Elements>
+                  )}
+                  <button
+                    className="btn btn-outline-secondary w-100 mt-2"
+                    onClick={() => setShowPayment(false)}
+                  >
+                    Back to Cart
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
