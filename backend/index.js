@@ -8,6 +8,7 @@ const productRouter = require('./routes/productRoute.js');
 const bannerRouter = require('./routes/bannerRoute.js')
 const emailRouter = require('./routes/emailRoutes.js')
 const orderRouter = require('./routes/orderRoute.js')
+const paymentRouter = require('./routes/paymentRoute.js')
 
 const PORT = process.env.PORT || 8080; 
 
@@ -43,6 +44,7 @@ app.use("/api/product", productRouter);
 app.use("/api/banner", bannerRouter);
 app.use("/api/emails", emailRouter);
 app.use("/api/orders", orderRouter);
+app.use("/api/payments", paymentRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
