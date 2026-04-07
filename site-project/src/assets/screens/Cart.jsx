@@ -194,7 +194,7 @@ const Cart = () => {
               <tr key={item._id}>
                 <td>
                   <img
-                    src={`${API_URL}/${item.file}`}
+                    src={item.file}
                     alt={item.name}
                     className="product-image"
                     onError={(e) => { e.target.src = 'https://placehold.co/60x60?text=No+Image' }}

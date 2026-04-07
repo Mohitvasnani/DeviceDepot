@@ -38,7 +38,7 @@ function Productcard({ product, handleClick }) {
             <div className="card border-0 shadow-sm h-100">
                 <div className="position-relative">
                     <img
-                        src={`${API_URL}/${product.files[0]}`}
+                        src={product.files[0]}
                         className="card-img-top"
                         alt={product.name}
                         style={{ height: '300px', objectFit: 'contain', cursor: 'pointer' }}

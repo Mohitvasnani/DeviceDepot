@@ -59,7 +59,7 @@ function Home() {
                     data-bs-interval="10000"
                   >
                     <img
-                      src={`${API_URL}/${banner.file}`}
+                      src={banner.file}
                       className="d-block w-100"
                       style={{ height: '400px', objectFit: 'cover' }}
                       alt={banner.name || 'Banner'}

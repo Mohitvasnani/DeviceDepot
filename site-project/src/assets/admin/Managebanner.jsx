@@ -108,7 +108,7 @@ function ManageBanners() {
               <tr key={banner._id}>
                 <td data-label="Image">
                   <img
-                    src={`${API_URL}/${banner.file}`}
+                    src={banner.file}
                     alt={banner.name}
                     height={50}
                     width={50}

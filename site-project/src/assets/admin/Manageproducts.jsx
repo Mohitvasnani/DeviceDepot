@@ -116,7 +116,7 @@ function ManageProducts() {
               <tr key={product._id}>
                 <td data-label="Image">
                   <img
-                    src={`${API_URL}/${product.files[0]}`}
+                    src={product.files[0]}
                     alt={product.name}
                     height={50}
                     width={50}

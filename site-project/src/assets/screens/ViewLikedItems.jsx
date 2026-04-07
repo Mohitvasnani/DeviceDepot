@@ -51,7 +51,7 @@ const ViewLikedItems = () => {
                         <div className="card h-100 border-0 shadow-sm">
                             <div className="position-relative">
                                 <img
-                                    src={`${API_URL}/${item.file}`}
+                                    src={item.file}
                                     className="card-img-top"
                                     alt={item.name}
                                     style={{ height: '300px', objectFit: 'contain' }}
