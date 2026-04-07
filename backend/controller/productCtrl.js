@@ -2,7 +2,7 @@ const productModel = require('../models/productModel');
 const cartModel = require('../models/cartModel');
 const likedModel = require('../models/likedModel');
 const userModel = require('../models/userModels');
-const IMG_BASE_URL = 'http://localhost:8080/';
+
 
 const addProduct = (req, res) => {
     const { name, rating, description, quantity, price, categories } = req.body;
@@ -11,7 +11,7 @@ const addProduct = (req, res) => {
         return res.status(400).json({ error: 'File is not provided' });
     }
 
-    const fileUrls = req.files.map(file => IMG_BASE_URL + file.filename);
+    const fileUrls = req.files.map(file => file.path);
 
     productModel.create({
         name,
@@ -69,7 +69,7 @@ const updateProduct = async (req, res) => {
 
         // Check if a new file is uploaded
         if (req.file) {
-            updates.file = IMG_BASE_URL + req.file.filename;
+            updates.file = req.file.path;
         }
 
         // Find and update product

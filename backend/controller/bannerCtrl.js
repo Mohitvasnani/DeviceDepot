@@ -1,5 +1,5 @@
 const bannerModel = require('../models/bannerModel')
-const IMG_BASE_URL = 'http://localhost:8080/';
+
 
 const createBanner = (req, res) => {
     const { name, description } = req.body
@@ -10,7 +10,7 @@ const createBanner = (req, res) => {
         bannerModel.create({
             name,
             description,
-            file: IMG_BASE_URL + req.file.filename
+            file: req.file.path
 
         }).then(createdBanner=>{res.json({success:true, file: createdBanner })})
         
