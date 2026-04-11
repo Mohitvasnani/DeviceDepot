@@ -8,7 +8,7 @@ require('dotenv').config()
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString(); // Generates a 6-digit OTP as a string
 };
-const sendEmail = async(req,res)=>{
+const sendEmail = async(req,res)=>{  
     const {email} = req.body
     const otp = generateOTP()
     const otpExpiry = Date.now() + 15*60*1000

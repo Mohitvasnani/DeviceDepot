@@ -23,13 +23,13 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, Postman)
+    
     if (!origin) return callback(null, true);
     
-    // Allow localhost
+    
     if (origin.includes('localhost')) return callback(null, true);
     
-    // Allow ALL Vercel deployments for this project
+    
     if (origin.includes('vercel.app')) return callback(null, true);
     
     callback(new Error('Not allowed by CORS'));
