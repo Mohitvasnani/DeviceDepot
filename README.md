@@ -2,7 +2,8 @@
 
 A full-stack e-commerce store for consumer electronics. Browse laptops, phones and accessories, manage a cart and saved items, check out through Stripe, and administer the catalogue and orders from a separate dashboard.
 
-Built solo as a portfolio project with the MERN stack.
+Originally built during a five-month internship at NetParam Technologies
+(February to June 2024), then independently rebuilt and extended in 2026.
 
 **Live:** [device-depot-gilt.vercel.app](https://device-depot-gilt.vercel.app) · API at [devicedepot.onrender.com](https://devicedepot.onrender.com)
 
@@ -14,7 +15,7 @@ Built solo as a portfolio project with the MERN stack.
 
 | | |
 |---|---|
-| Frontend | React 18, Vite, React Router 6, Bootstrap 5, Axios |
+| Frontend | React 18, Vite, Redux Toolkit, React Router 6, Bootstrap 5, Axios |
 | Backend | Node, Express 4, Mongoose 8 |
 | Database | MongoDB Atlas |
 | Auth | JWT, bcrypt |
@@ -26,7 +27,7 @@ Built solo as a portfolio project with the MERN stack.
 ## Features
 
 **Shopping**
-- Catalogue with laptop, mobile and accessories sections
+- Catalogue of 36 products across laptops, mobiles and accessories
 - Product detail pages with a gallery, specification list and live stock
 - Cart with quantity controls
 - Saved items
@@ -38,12 +39,20 @@ Built solo as a portfolio project with the MERN stack.
 - Password reset by one-time code sent over email
 - Editable profile with multiple delivery addresses
 - Role-based access, with admin routes protected by middleware
+- Auth and cart state in Redux Toolkit, so the navbar, product cards and cart page always agree
 
 **Admin dashboard**
 - Create, edit and delete products, with multi-image upload to Cloudinary
 - Homepage banner management
 - View all orders and move them through pending, processing, shipped, delivered and cancelled
 - User list and role management
+
+## Catalogue
+
+The products are fictional. **Aerlite** laptops, **Kestrix** phones and **Halden**
+accessories are invented brands, and the artwork is generated to match by
+`site-project/scripts/make-product-art.mjs` rather than being stock photography.
+This keeps the grid visually consistent and avoids using real product imagery.
 
 ## Design
 
@@ -79,9 +88,25 @@ A fresh cluster has no products, and no admin account. The role-toggle endpoint 
 node scripts/seedProducts.js --wipe --admin
 ```
 
-This inserts 18 products across the three categories and creates an admin user. Credentials are printed on completion and can be set with `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD`.
+This inserts 36 products, 12 per category, and creates an admin user. Credentials are printed on completion and can be set with `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD`.
 
-Product images default to placeholder URLs so the catalogue renders immediately. Replace them by uploading real images through the admin dashboard, or by filling in `IMAGE_OVERRIDES` at the top of the seed script.
+Artwork is read from `site-project/public/products/`. To change it, edit
+`site-project/scripts/make-product-art.mjs` and re-run `node scripts/make-product-art.mjs`.
+Pass `--placeholders` to the seed script to fall back to remote placeholders.
+
+### Managing users
+
+No database editing required:
+
+```bash
+node scripts/admin.js list                              # who exists, and who is admin
+node scripts/admin.js create you@example.com Password   # admin by default, --user for a normal account
+node scripts/admin.js promote you@example.com
+node scripts/admin.js password you@example.com NewPassword
+node scripts/admin.js fix-indexes                       # run once on a pre-existing database
+```
+
+The role is baked into the JWT at login, so sign out and back in after `promote`.
 
 ### 3. Frontend
 
@@ -190,12 +215,18 @@ backend/
   middleware/     JWT auth, Cloudinary upload
   models/         Product, User, Cart, Order, Like, Banner
   routes/         Express routers
-  scripts/        seedProducts.js, check.js
+  scripts/        seedProducts.js, admin.js, check.js
   index.js        app entry
 
 site-project/
+  public/
+    products/         generated product artwork
+    about/            generated About panels
+    brand/            logo lockups, marks, favicon
+  scripts/            make-product-art.mjs
   src/
     index.css           design tokens and base styles
+    store/              Redux Toolkit: authSlice, cartSlice
     assets/
       components/       Navbar, Footer, Productcard, context
       screens/          public pages
@@ -218,6 +249,10 @@ Note that `components`, `screens`, `admin` and `user` sit under `src/assets/` ra
 3. Add every variable from the backend table above. Leave `PORT` out, Render provides it.
 4. In Atlas, allow `0.0.0.0/0` under Network Access. Render's free tier has dynamic outbound IPs, so a narrow allowlist will not work.
 
+### Keeping the API warm
+
+Render's free tier sleeps after about 15 minutes idle. `GET /health` exists to wake it and to touch MongoDB so the Atlas cluster stays active. It is called by the frontend on first load and by the portfolio site. Optionally, schedule a ping every 10 minutes during UK daytime (for example 08:00 to 20:00) with cron-job.org. Do not ping around the clock: free instance hours are shared across every free service on the account.
+
 ### Frontend, on Vercel
 
 1. New Project, connected to this repository
@@ -234,6 +269,7 @@ Note that `components`, `screens`, `admin` and `user` sit under `src/assets/` ra
 Documented rather than hidden. Tracked in [`REVIEW.md`](REVIEW.md) with fixes.
 
 - Product routes are not yet behind auth middleware
+- Registration returns HTTP 200 on failure; the client checks the response body instead
 - Several endpoints identify the user from the request body instead of the JWT
 - The Stripe amount is calculated client-side
 - Stock is not decremented on purchase

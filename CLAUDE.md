@@ -2,7 +2,7 @@
 
 Solo MERN e-commerce app (electronics store). Portfolio project, not production.
 
-- Frontend: `site-project/` — React 18 + Vite + Bootstrap 5, deployed to Vercel
+- Frontend: `site-project/` — React 18 + Vite + Redux Toolkit + Bootstrap 5, deployed to Vercel
 - Backend: `backend/` — Express 4 + Mongoose 8, deployed to Render
 - DB: MongoDB Atlas
 - Images: Cloudinary (via `multer-storage-cloudinary`)
@@ -22,8 +22,20 @@ cd site-project && npm install && npm run dev
 cd site-project && npm run build
 cd site-project && npm run lint               # eslint, --max-warnings 0
 
-# seed the database
+# seed the database (36 products + an admin user)
 cd backend && node scripts/seedProducts.js --wipe --admin
+
+# user management, instead of editing documents in Compass
+cd backend && node scripts/admin.js list
+cd backend && node scripts/admin.js password <email> <newPassword>
+cd backend && node scripts/admin.js promote <email>
+cd backend && node scripts/admin.js fix-indexes
+
+# diagnose env / port / database in one pass
+cd backend && node scripts/check.js
+
+# regenerate the product and About artwork
+cd site-project && node scripts/make-product-art.mjs
 ```
 
 There are no tests. Do not claim a change is verified without running the app.
@@ -69,9 +81,35 @@ Auth is JWT in the `Authorization: Bearer <token>` header, verified by `middlewa
 
 Image uploads go through `middleware/upload.js` (multer + Cloudinary). `req.file.path` / `req.files[].path` are already full Cloudinary URLs; they get stored directly in the document. `backend/public/Images/` is dead weight from the pre-Cloudinary version — nothing new should be written there.
 
-Frontend routing is in `src/App.jsx`. `ProductsContext` (`src/assets/components/Productcontext.jsx`) holds products, cart and liked state and does the fetching. Admin screens live in `src/assets/admin/`, user screens in `src/assets/user/`, public screens in `src/assets/screens/`.
+Frontend state is split deliberately:
+
+- **Redux Toolkit** (`src/store/`) owns auth and cart, the two things several
+  components must agree about. `authSlice` holds token, email, role, expiry;
+  `cartSlice` holds items plus async thunks and derived count and subtotal.
+  localStorage still persists the token but is no longer read by components.
+- **`ProductsContext`** still owns the catalogue and liked items. It is fetched
+  once and barely changes, so moving it to Redux would be churn. Its provider
+  value is memoised: a fresh object there re-rendered all 36 cards on any change.
+
+Frontend routing is in `src/App.jsx`. There is exactly one `<ToastContainer>`, in
+`App.jsx`. Do not add more; multiple unnamed containers crash react-toastify. Admin screens live in `src/assets/admin/`, user screens in `src/assets/user/`, public screens in `src/assets/screens/`.
 
 Note the odd layout: components, screens, admin, user and css all live **under** `src/assets/`, not beside it. Follow it; renaming it is a separate refactor.
+
+## Design system
+
+`src/index.css` holds the tokens and must stay the **last** import in `main.jsx`,
+after Bootstrap, or Bootstrap wins on equal specificity. Colours come from the
+logo: ink `#141412`, signal yellow `#f5ce2e`, warm concrete `#ecebe5`. Type is
+Barlow and Barlow Condensed on a 1.25 scale; spacing is a 4px scale. Bootstrap is
+themed by overriding its CSS variables, not with `!important`.
+
+Never hardcode a colour. If a token is missing, add one.
+
+Product and About artwork is generated, not drawn by hand, by
+`site-project/scripts/make-product-art.mjs` into `public/products/` and
+`public/about/`. Edit the script and re-run it; do not hand-edit the SVGs.
+Brand assets are in `public/brand/`.
 
 ## Data model
 
@@ -100,9 +138,10 @@ Live, unfixed. Don't be surprised by these, and don't fix them silently as part 
 - `database/dbConnect.js` calls `connection()` at module load **and** exports it, and `index.js` calls it again. The DB connects twice on every boot.
 - CORS in `index.js` allows any origin containing `localhost` or `vercel.app`. Effectively open. The `allowedOrigins` array above it is declared and never used.
 - JWT expires in 1h with no refresh, so the UI silently 401s after an hour.
-- `otpStore.js` holds reset OTPs in memory, so they are lost on Render restart or cold start.
-- `backend/public/Images/` has ~115 orphaned legacy uploads committed to the repo.
-- Render's free tier spins the backend down after inactivity, so the first request after idle takes ~50s. The frontend has no loading state for this.
+- `otpStore.js` holds reset OTPs in memory, so they are lost on Render restart or cold start. There is no rate limit on `send-otp`.
+- Stock is never decremented on purchase.
+- `backend/public/Images/` still exists on disk but is gitignored and unused.
+- Render's free tier spins the backend down after inactivity, so the first request after idle takes ~50s. `GET /health` wakes it (and pings Mongo); `site-project/src/main.jsx` calls it once per session on load. Free instance hours are shared across the account, so don't add an always-on pinger.
 
 ## Conventions
 
@@ -110,3 +149,4 @@ Live, unfixed. Don't be surprised by these, and don't fix them silently as part 
 - Bootstrap utility classes for layout; per-screen CSS in `src/assets/css/`
 - `react-toastify` for user feedback, already wired in `Productcard.jsx` and elsewhere
 - Keep commits scoped. Don't reformat files you're not changing.
+- The catalogue is fictional: Aerlite laptops, Kestrix phones, Halden accessories. Keep it that way, the artwork is drawn to match.
