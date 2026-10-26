@@ -13,6 +13,17 @@ import 'react-toastify/dist/ReactToastify.css'
 // overrides, and CSS of equal specificity is won by whatever loads later.
 import './index.css'
 
+// Start waking the free-tier API as soon as the site opens, so it is
+// already booting by the time the first real request is made.
+try {
+  if (import.meta.env.VITE_API_URL && !sessionStorage.getItem('api-warmed')) {
+    sessionStorage.setItem('api-warmed', '1')
+    fetch(`${import.meta.env.VITE_API_URL}/health`, { mode: 'no-cors' }).catch(() => {})
+  }
+} catch (e) {
+  // sessionStorage can throw in private windows; warm-up is best effort
+}
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Provider store={store}>
