@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
 import ProtectedRoute from './assets/components/ProtectedRoute';
 import Navbar from './assets/components/Navbar';
 import Footer from './assets/components/Footer';
@@ -69,6 +70,7 @@ function App() {
           <Route path="/liked-items" element={<ViewLikedItems />} />
         </Routes>
         <Footer />
+        <ToastContainer position="bottom-right" autoClose={2500} newestOnTop theme="light" />
       </Router>
     </ProductsProvider>
     </div>

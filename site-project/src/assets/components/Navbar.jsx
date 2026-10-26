@@ -59,7 +59,7 @@ function Navbar() {
   }, []);
 
   return (
-    <nav className="navbar navbar-expand-lg" style={{ backgroundColor: '#21618C' }}>
+    <nav className="navbar navbar-expand-lg">
       <div className="container-fluid">
         <NavLink to='/home' className="navbar-brand">DeviceDepot.</NavLink>
         <button
@@ -75,20 +75,23 @@ function Navbar() {
         </button>
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+            {/* Dropdown toggles are buttons, not NavLinks. A NavLink to "#"
+                resolves to the current path, so React Router marked them
+                permanently active. */}
             <li className="nav-item dropdown">
-              <NavLink
+              <button
+                type="button"
                 className="nav-link dropdown-toggle"
-                to="#"
                 id="shopDropdown"
-                role="button"
                 data-bs-toggle="dropdown"
+                aria-expanded="false"
               >
                 Shop
-              </NavLink>
-              <div className="dropdown-menu">
-                <NavLink to="/accessories" className="dropdown-item">Accessories</NavLink>
-                <NavLink to="/mobile" className="dropdown-item">Mobiles</NavLink>
+              </button>
+              <div className="dropdown-menu" aria-labelledby="shopDropdown">
                 <NavLink to="/laptop" className="dropdown-item">Laptops</NavLink>
+                <NavLink to="/mobile" className="dropdown-item">Mobiles</NavLink>
+                <NavLink to="/accessories" className="dropdown-item">Accessories</NavLink>
               </div>
             </li>
             <li className="nav-item">
@@ -106,20 +109,20 @@ function Navbar() {
           <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
             <li className="nav-item">
               <NavLink className="nav-link" to="/liked-items">
-                <i className="bi bi-heart me-1"></i>Liked
+                <i className="bi bi-heart me-1" aria-hidden="true"></i>Liked
               </NavLink>
             </li>
             <li className="nav-item dropdown">
-              <NavLink
+              <button
+                type="button"
                 className="nav-link dropdown-toggle"
-                to="#"
                 id="accountDropdown"
-                role="button"
                 data-bs-toggle="dropdown"
+                aria-expanded="false"
               >
-                <i className="bi bi-person me-1"></i>Account
-              </NavLink>
-              <div className="dropdown-menu dropdown-menu-end">
+                <i className="bi bi-person me-1" aria-hidden="true"></i>Account
+              </button>
+              <div className="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
                 {isAuthenticated ? (
                   <>
                     <NavLink className="dropdown-item" to="/userdash/userprofile">
@@ -132,18 +135,18 @@ function Navbar() {
                     <button
                       type="button"
                       onClick={handleLogout}
-                      className="dropdown-item text-danger"
+                      className="dropdown-item dd-signout"
                     >
-                      <i className="bi bi-box-arrow-right me-1"></i>Log Out
+                      <i className="bi bi-box-arrow-right me-1" aria-hidden="true"></i>Log out
                     </button>
                   </>
                 ) : (
                   <>
                     <NavLink className="dropdown-item" to="/loginregister">
-                      Sign In
+                      Sign in
                     </NavLink>
                     <NavLink className="dropdown-item" to="/loginregister">
-                      Create Account
+                      Create account
                     </NavLink>
                   </>
                 )}
@@ -151,7 +154,7 @@ function Navbar() {
             </li>
             <li className="nav-item">
               <NavLink className="nav-link" to="/cart">
-                <i className="bi bi-cart me-1"></i>Cart
+                <i className="bi bi-cart me-1" aria-hidden="true"></i>Cart
               </NavLink>
             </li>
           </ul>

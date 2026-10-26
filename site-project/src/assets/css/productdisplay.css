@@ -1,83 +1,221 @@
+/* Product detail. Two columns on desktop, stacked on mobile. The previous
+   version was a fixed col-6 split with no breakpoint, unusable on a phone. */
+
 .parent_displayitem {
-    padding: 5rem;
+  width: 100%;
+  max-width: var(--dd-container);
+  margin: 0 auto;
+  padding: var(--dd-6) var(--dd-4) var(--dd-8);
+}
+
+.dd-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: var(--dd-7);
+  align-items: start;
+  background: var(--dd-surface);
+  border: 1px solid var(--dd-line-soft);
+  border-radius: var(--dd-radius-lg);
+  padding: var(--dd-6);
+}
+
+/* --- gallery ------------------------------------------------------------ */
+
+.dd-gallery {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: var(--dd-4);
+}
+
+.dd-thumbs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dd-2);
+}
+
+.dd-thumb {
+  width: 72px;
+  height: 72px;
+  padding: var(--dd-1);
+  background: var(--dd-surface-2);
+  border: 1px solid var(--dd-line-soft);
+  border-radius: var(--dd-radius);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.dd-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.dd-thumb:hover { border-color: var(--dd-line); }
+
+.dd-thumb.is-active {
+  border-color: var(--dd-ink);
+  box-shadow: inset 0 0 0 1px var(--dd-ink);
+}
+
+.dd-stage {
+  background: var(--dd-surface-2);
+  border: 1px solid var(--dd-line-soft);
+  border-radius: var(--dd-radius);
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  padding: var(--dd-5);
+}
+
+.dd-stage img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* --- info --------------------------------------------------------------- */
+
+.dd-detail-cat {
+  display: inline-block;
+  background: var(--dd-ink);
+  color: var(--dd-surface);
+  font-size: var(--dd-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 2px var(--dd-2);
+  border-radius: 3px;
+  margin-bottom: var(--dd-3);
+}
+
+.dd-detail h1 {
+  font-size: var(--dd-text-2xl);
+  margin-bottom: var(--dd-3);
+  max-width: 20ch;
+}
+
+.dd-detail-rating {
+  color: var(--dd-warn);
+  font-size: var(--dd-text-sm);
+  letter-spacing: 1px;
+  margin-left: var(--dd-3);
+}
+
+.dd-detail-pricerow {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: var(--dd-4);
+}
+
+.dd-detail-desc {
+  color: var(--dd-ink-soft);
+  margin-bottom: var(--dd-4);
+  max-width: 56ch;
+}
+
+.dd-stock {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dd-2);
+  font-size: var(--dd-text-sm);
+  font-weight: 600;
+  margin-bottom: var(--dd-5);
+}
+
+.dd-stock::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.dd-stock.in  { color: var(--dd-ok); }
+.dd-stock.out { color: var(--dd-alert); }
+
+.dd-detail-actions {
+  display: flex;
+  gap: var(--dd-3);
+  margin-bottom: var(--dd-6);
+}
+
+.dd-detail-actions .btn { flex: 1; }
+
+.dd-save-btn {
+  width: 46px;
+  flex: 0 0 46px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--dd-line);
+  border-radius: var(--dd-radius);
+  background: var(--dd-surface);
+  color: var(--dd-ink-soft);
+  font-size: 1.15rem;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.dd-save-btn:hover,
+.dd-save-btn.is-saved { color: var(--dd-alert); border-color: var(--dd-alert); }
+
+/* --- spec table ---------------------------------------------------------
+   Specs are what people actually compare, so they get a table rather than
+   an accordion that hides them. */
+
+.dd-specs {
+  border-top: 2px solid var(--dd-ink);
+  padding-top: var(--dd-4);
+}
+
+.dd-specs h2 {
+  font-size: var(--dd-text-md);
+  margin-bottom: var(--dd-3);
+}
+
+.dd-spec-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dd-spec-list li {
+  padding: var(--dd-3) 0;
+  border-bottom: 1px solid var(--dd-line-soft);
+  font-size: var(--dd-text-sm);
+  font-weight: 500;
+}
+
+.dd-spec-list li:last-child { border-bottom: 0; }
+
+/* --- responsive --------------------------------------------------------- */
+
+@media (max-width: 991.98px) {
+  .dd-detail {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--dd-6);
+    padding: var(--dd-5);
   }
-  
-  .child_displayitem {
-    display: flex;
-    justify-content: center;
+}
+
+@media (max-width: 575.98px) {
+  .parent_displayitem { padding: var(--dd-4) var(--dd-3) var(--dd-7); }
+
+  .dd-detail { padding: var(--dd-4); border-radius: var(--dd-radius); }
+
+  /* Thumbnails move under the image and scroll sideways */
+  .dd-gallery {
+    grid-template-columns: minmax(0, 1fr);
   }
-  
-  .detail_displayarea {
-    display: flex;
-    padding: 2rem;
-    border: 1px solid #ccc;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    background-color: #f8f9fa;
-    width: 100%;
-    max-width: 1200px; /* Adjust this value as needed */
+
+  .dd-thumbs {
+    order: 2;
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: var(--dd-1);
   }
-  
-  .bottom_img {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .thumb_img {
-    width: 50px;
-    height: 50px;
-    object-fit: cover;
-    margin-bottom: 1rem;
-  }
-  
-  .main_img_container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 400px;
-    height: 400px;
-  }
-  
-  .main_img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  .rating {
-    display: flex;
-    align-items: center;
-  }
-  
-  .accordion {
-    width: 100%;
-  }
-  
-  .accordion-item {
-    width: 100%;
-  }
-  
-  .accordion-button {
-    background-color: #e9ecef;
-    border: none;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-    width: 100%;
-  }
-  
-  .accordion-button:not(.collapsed) {
-    background-color: #d3d3d3;
-  }
-  
-  .accordion-button:focus {
-    box-shadow: none;
-  }
-  
-  .accordion-collapse {
-    transition: height 0.3s ease;
-  }
-  
-  .accordion-body {
-    background-color: #f8f9fa;
-  }
-  
+
+  .dd-stage { order: 1; aspect-ratio: 4 / 3; padding: var(--dd-4); }
+
+  .dd-thumb { flex: 0 0 56px; width: 56px; height: 56px; }
+
+  .dd-detail h1 { font-size: var(--dd-text-xl); }
+}

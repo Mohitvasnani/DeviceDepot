@@ -1,56 +1,167 @@
-/* Accessories.css */
+/* Product card and the category page shell it sits in. */
 
 .accessories-container {
-    max-width: 1500px;
-    margin: 0 auto;
-    padding: 20px;
-  }
-  
-  .accessories-header {
-    text-align: center;
-    margin-bottom: 30px;
-  }
-  
-  .accessories-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 20px;
-  }
-  
-  .accessories-item {
-    background-color: #ffffff;
-    border: 1px solid #e0e0e0;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    cursor: pointer;
-  }
-  
-  .accessories-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-  
-  .accessories-item img {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-  }
-  
-  .accessories-item-title {
-    font-size: 1.1rem;
-    margin: 10px 0;
-  }
-  
-  .accessories-item-price {
-    font-size: 0.9rem;
-    color: #888;
-  }
-  
-  .accessories-item-description {
-    font-size: 0.9rem;
-    color: #666;
-    margin-top: 10px;
-  }
-  
+  width: 100%;
+  max-width: var(--dd-container);
+  margin: 0 auto;
+  padding: var(--dd-6) var(--dd-4) var(--dd-8);
+}
+
+.accessories-header {
+  text-align: left;
+  padding-top: var(--dd-5);
+  border-top: 2px solid var(--dd-ink);
+  margin-bottom: var(--dd-5);
+}
+
+.accessories-header h3 {
+  margin: 0;
+  font-size: var(--dd-text-2xl);
+}
+
+/* --- card ----------------------------------------------------------------
+   Every card is the same height with the same image ratio, so a row reads
+   as a row rather than a ragged edge. */
+
+.dd-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--dd-surface);
+  border: 1px solid var(--dd-line-soft);
+  border-radius: var(--dd-radius-lg);
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dd-card:hover,
+.dd-card:focus-within {
+  border-color: var(--dd-line);
+  box-shadow: var(--dd-shadow-up);
+}
+
+/* --- media -------------------------------------------------------------- */
+
+.dd-card-media {
+  position: relative;
+  background: var(--dd-surface-2);
+  border-bottom: 1px solid var(--dd-line-soft);
+}
+
+.dd-card-imgbtn {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.dd-card-imgbtn img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  padding: var(--dd-4);
+}
+
+/* Category chip: solid ink so it stays readable over a light product shot,
+   which the old translucent grey badge did not. */
+.dd-card-cat {
+  position: absolute;
+  top: var(--dd-2);
+  left: var(--dd-2);
+  background: var(--dd-ink);
+  color: var(--dd-surface);
+  font-size: var(--dd-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 2px var(--dd-2);
+  border-radius: 3px;
+}
+
+.dd-card-save {
+  position: absolute;
+  top: var(--dd-2);
+  right: var(--dd-2);
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--dd-line);
+  border-radius: 50%;
+  background: var(--dd-surface);
+  color: var(--dd-ink-soft);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.dd-card-save:hover { color: var(--dd-alert); border-color: var(--dd-alert); }
+.dd-card-save.is-saved { color: var(--dd-alert); border-color: var(--dd-alert); }
+
+.dd-card-oos {
+  position: absolute;
+  inset: auto 0 0 0;
+  background: var(--dd-ink);
+  color: var(--dd-surface);
+  font-size: var(--dd-text-xs);
+  font-weight: 600;
+  text-align: center;
+  padding: 2px;
+}
+
+/* --- body --------------------------------------------------------------- */
+
+.dd-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: var(--dd-4);
+}
+
+.dd-card-title {
+  margin: 0 0 var(--dd-2);
+  font-size: var(--dd-text-md);
+  line-height: 1.15;
+}
+
+.dd-card-title button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dd-card-title button:hover { text-decoration: underline; }
+
+.dd-card-blurb {
+  margin: 0 0 var(--dd-4);
+  font-size: var(--dd-text-sm);
+  line-height: 1.45;
+  color: var(--dd-ink-soft);
+}
+
+.dd-card-foot { margin-top: auto; }
+
+.dd-card-figures {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--dd-2);
+  margin-bottom: var(--dd-3);
+}
+
+.dd-card-rating {
+  color: var(--dd-warn);
+  font-size: var(--dd-text-xs);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+@media (max-width: 575.98px) {
+  .dd-card-imgbtn img { aspect-ratio: 16 / 10; }
+}

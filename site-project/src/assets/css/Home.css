@@ -1,53 +1,136 @@
+/* Home: one dark hero, then everything else on concrete. The previous
+   version had three unrelated background colours in the first viewport. */
+
 .home_parent {
-    min-height: 100vh;
-    width: 100%;
-    overflow-x: hidden;
-    background: #f8f9fa;
-  }
-  
-  .home_child {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  
-  .home_banner .carousel-item img {
-    height: 500px;
-    object-fit: cover;
-  }
-  
-  .home_top_seller {
-    background: #31363F;
-  }
-  
-  .home_top_seller h3 {
-    font-size: 2rem;
-    font-weight: bold;
-  }
-  
-  .product-card {
-    transition: transform 0.2s;
-  }
-  
-  .product-card:hover {
-    transform: scale(1.05);
-  }
-  
-  .product-card img {
-    height: 300px;
-    object-fit: contain;
-  }
-  
-  .home_new_arrivals {
-    background: #2A2F37;
-  }
-  
-  .home_new_arrivals h3 {
-    font-size: 2rem;
-    font-weight: bold;
-  }
-  
-  .home_categories, .home_offers {
-    background: #21252B;
-    color: #fff;
-  }
-  
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  background: var(--dd-concrete);
+}
+
+.home_child {
+  width: 100%;
+  max-width: var(--dd-container);
+  margin: 0 auto;
+  padding-inline: var(--dd-4);
+}
+
+/* --- hero ----------------------------------------------------------------
+   With no banners in the database this is what people land on, so it is
+   designed as the hero rather than as a fallback. Type does the work. */
+
+.dd-hero {
+  background: var(--dd-ink);
+  color: var(--dd-surface);
+  border-radius: var(--dd-radius-lg);
+  padding: var(--dd-8) var(--dd-6);
+  margin-top: var(--dd-5);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hazard stripe along the top edge. Depot signage, and it marks where the
+   content starts. */
+.dd-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 6px;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--dd-signal) 0 14px,
+    var(--dd-ink) 14px 28px
+  );
+}
+
+.dd-hero h1 {
+  font-size: clamp(2.2rem, 6vw, 4rem);
+  line-height: 0.98;
+  color: var(--dd-surface);
+  max-width: 16ch;
+  margin-bottom: var(--dd-4);
+}
+
+.dd-hero p {
+  color: #b9c0c8;
+  font-size: var(--dd-text-md);
+  max-width: 46ch;
+  margin-bottom: var(--dd-6);
+}
+
+.dd-hero-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--dd-2);
+}
+
+.dd-hero-link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--dd-2);
+  padding: var(--dd-3) var(--dd-5);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--dd-radius);
+  color: var(--dd-surface);
+  font-family: var(--dd-font-condensed);
+  font-size: var(--dd-text-md);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.dd-hero-link .dd-hero-link-count {
+  font-family: var(--dd-font);
+  font-size: var(--dd-text-xs);
+  font-weight: 500;
+  color: #8d959e;
+}
+
+.dd-hero-link:hover,
+.dd-hero-link:focus-visible {
+  background: var(--dd-signal);
+  border-color: var(--dd-signal);
+  color: var(--dd-ink);
+}
+
+.dd-hero-link:hover .dd-hero-link-count,
+.dd-hero-link:focus-visible .dd-hero-link-count {
+  color: var(--dd-ink);
+}
+
+/* --- carousel, when banners do exist ------------------------------------ */
+
+.home_banner {
+  margin-top: var(--dd-5);
+}
+
+.home_banner .carousel,
+.home_banner .carousel-inner,
+.home_banner .carousel-item {
+  border-radius: var(--dd-radius-lg);
+  overflow: hidden;
+}
+
+.home_banner .carousel-item img {
+  height: clamp(220px, 34vw, 420px);
+  object-fit: cover;
+}
+
+/* --- product sections --------------------------------------------------- */
+
+.home_top_seller,
+.home_new_arrivals {
+  background: transparent;
+  color: var(--dd-ink);
+  padding: var(--dd-7) 0 0;
+}
+
+.home_display_card {
+  --bs-gutter-x: var(--dd-4);
+  --bs-gutter-y: var(--dd-4);
+}
+
+@media (max-width: 575.98px) {
+  .dd-hero { padding: var(--dd-6) var(--dd-4); }
+  .dd-hero-link { flex: 1 1 auto; justify-content: center; }
+}

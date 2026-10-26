@@ -2,200 +2,166 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../css/productdisplay.css';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 
 const API_URL = import.meta.env.VITE_API_URL;
+const FALLBACK = 'https://placehold.co/600x600/f3f4f6/6b737d/png?text=No+image';
 
 function Productdisplay() {
   const [liked, setLiked] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const location = useLocation();
   const navigate = useNavigate();
-  const product_data = location.state?.productData;
+  const product = location.state?.productData;
   const token = localStorage.getItem('token');
 
-  // Guard — if user navigates here directly with no product data
-  if (!product_data) {
+  if (!product) {
     return (
-      <div className="d-flex flex-column justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
-        <h3 className="text-muted">No product selected</h3>
-        <button className="btn btn-primary mt-3" onClick={() => navigate('/home')}>
-          Back to Home
-        </button>
+      <div className="parent_displayitem">
+        <div className="dd-empty">
+          <h4>Nothing to show here</h4>
+          <p>Product pages open from the catalogue, so this one has no product attached. Refreshing the page loses it.</p>
+          <button className="btn btn-primary" onClick={() => navigate('/home')}>
+            Browse the catalogue
+          </button>
+        </div>
       </div>
     );
   }
 
-  const addToCart = async (productId) => {
+  const images = product.files?.length ? product.files : [FALLBACK];
+  const inStock = product.quantity > 0;
+  const features = [product.feature1, product.feature2, product.feature3].filter(Boolean);
+
+  const addToCart = async () => {
     const userEmail = localStorage.getItem('email');
-    if (!userEmail) {
-      toast.warning('Please log in to add items to cart');
-      return;
-    }
+    if (!userEmail) return toast.warning('Sign in to add items to your cart');
     try {
-      const response = await axios.post(
+      const res = await axios.post(
         `${API_URL}/api/product/addcart`,
-        { productId, email: userEmail },
+        { productId: product._id, email: userEmail },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      if (response.data.success) {
-        toast.success('Product added to cart!');
-      } else {
-        toast.error('Failed to add product to cart.');
-      }
+      res.data.success
+        ? toast.success(`${product.name} added to cart`)
+        : toast.error('Could not add to cart');
     } catch (err) {
       console.error('Error adding to cart:', err);
-      toast.error('Error adding to cart');
-    }
-  };
-
-  const addLike = async (productId) => {
-    const userEmail = localStorage.getItem('email');
-    if (!userEmail) {
-      toast.warning('Please log in to like products');
-      return;
-    }
-    try {
-      const response = await axios.post(
-        `${API_URL}/api/product/addlike`,
-        { productId, email: userEmail },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (response.data.success) {
-        toast.success('Added to liked items!');
-      }
-    } catch (error) {
-      console.error('Error adding to liked:', error);
-      toast.error('Error adding to liked');
-    }
-  };
-
-  const removeLike = async (productId) => {
-    const userEmail = localStorage.getItem('email');
-    if (!userEmail) return;
-    try {
-      const response = await axios.delete(
-        `${API_URL}/api/product/removelike`,
-        {
-          data: { productId, email: userEmail },
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      if (response.data.success) {
-        toast.info('Removed from liked items');
-      }
-    } catch (error) {
-      console.error('Error removing like:', error);
-      toast.error('Error removing like');
+      toast.error('Could not add to cart');
     }
   };
 
   const toggleLike = async () => {
-    if (liked) {
-      await removeLike(product_data._id);
-    } else {
-      await addLike(product_data._id);
+    const userEmail = localStorage.getItem('email');
+    if (!userEmail) return toast.warning('Sign in to save items');
+    const headers = { Authorization: `Bearer ${token}` };
+    try {
+      if (liked) {
+        await axios.delete(`${API_URL}/api/product/removelike`, {
+          data: { productId: product._id, email: userEmail },
+          headers,
+        });
+        toast.info('Removed from saved items');
+      } else {
+        await axios.post(
+          `${API_URL}/api/product/addlike`,
+          { productId: product._id, email: userEmail },
+          { headers }
+        );
+        toast.success('Saved');
+      }
+      setLiked(!liked);
+    } catch (error) {
+      console.error('Error updating saved items:', error);
+      toast.error('Could not update saved items');
     }
-    setLiked(!liked);
   };
 
   return (
-    <div className="parent_displayitem p-5">
-      <ToastContainer />
-      <div className="child_displayitem d-flex justify-content-center">
-        <div className="detail_displayarea d-flex p-4 border border-1 shadow-lg bg-secondary-subtle">
+    <div className="parent_displayitem">
+      <div className="dd-detail">
 
-          {/* Image Section */}
-          <div className="col-6 d-flex justify-content-evenly align-items-center">
-            <div className="bottom_img col-2">
-              {product_data.files.slice(0, 4).map((file, index) => (
-                <img
-                  key={index}
-                  src={`${API_URL}/${file}`}
-                  alt={`${product_data.name} view ${index + 1}`}
-                  className={`thumb_img mb-2 ${selectedImage === index ? 'border border-primary' : ''}`}
-                  onClick={() => setSelectedImage(index)}
-                  style={{ cursor: 'pointer' }}
-                  onError={(e) => { e.target.src = 'https://placehold.co/60x60?text=No+Image' }}
-                />
-              ))}
-            </div>
-            <div className="main_img_container">
-              <img
-                src={`${API_URL}/${product_data.files[selectedImage]}`}
-                alt={product_data.name}
-                className="main_img"
-                onError={(e) => { e.target.src = 'https://placehold.co/300x300?text=No+Image' }}
-              />
-            </div>
-          </div>
-
-          {/* Product Details */}
-          <div className='p-2'>
-            <span className="badge bg-secondary mb-2">{product_data.categories}</span>
-            <h4>{product_data.name}</h4>
-            <h5 className="text-danger">£{product_data.price}</h5>
-            <div className="mb-2 text-warning">
-              {'⭐'.repeat(Math.min(product_data.rating, 5))}
-            </div>
-            <p className="mt-2">{product_data.description}</p>
-
-            {/* Stock Status */}
-            <p>
-              {product_data.quantity > 0 ? (
-                <span className="badge bg-success">In Stock ({product_data.quantity} available)</span>
-              ) : (
-                <span className="badge bg-danger">Out of Stock</span>
-              )}
-            </p>
-
-            <div className="mt-3">
+        <div className="dd-gallery">
+          <div className="dd-thumbs">
+            {images.slice(0, 4).map((file, index) => (
               <button
+                key={index}
                 type="button"
-                className="me-3 btn btn-primary"
-                onClick={() => addToCart(product_data._id)}
-                disabled={product_data.quantity === 0}
+                className={`dd-thumb ${selectedImage === index ? 'is-active' : ''}`}
+                onClick={() => setSelectedImage(index)}
+                aria-label={`Show image ${index + 1} of ${Math.min(images.length, 4)}`}
+                aria-pressed={selectedImage === index}
               >
-                <i className="bi bi-cart-plus me-1"></i>Add To Cart
+                {/* files[] holds absolute URLs already. Do not prefix API_URL. */}
+                <img
+                  src={file}
+                  alt=""
+                  onError={(e) => { e.currentTarget.src = FALLBACK; }}
+                />
               </button>
-              <i
-                className={`bi ${liked ? 'bi-heart-fill' : 'bi-heart'} me-2 fs-4 text-danger`}
-                onClick={toggleLike}
-                style={{ cursor: 'pointer' }}
-              ></i>
-            </div>
-
-            {/* Features Accordion */}
-            <div className="mt-4">
-              <div className="accordion" id="accordionExample">
-                <div className="accordion-item">
-                  <h2 className="accordion-header">
-                    <button
-                      className="accordion-button"
-                      type="button"
-                      data-bs-toggle="collapse"
-                      data-bs-target="#collapseOne"
-                      aria-expanded="true"
-                    >
-                      Key Features
-                    </button>
-                  </h2>
-                  <div id="collapseOne" className="accordion-collapse collapse show" data-bs-parent="#accordionExample">
-                    <div className="accordion-body">
-                      <ul className="mb-0">
-                        <li>{product_data.feature1}</li>
-                        <li>{product_data.feature2}</li>
-                        <li>{product_data.feature3}</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
 
+          <div className="dd-stage">
+            <img
+              src={images[selectedImage]}
+              alt={product.name}
+              onError={(e) => { e.currentTarget.src = FALLBACK; }}
+            />
+          </div>
         </div>
+
+        <div className="dd-detail-info">
+          <span className="dd-detail-cat">{product.categories}</span>
+          <h1>{product.name}</h1>
+
+          <div className="dd-detail-pricerow">
+            <span className="dd-price dd-price-lg">£{product.price}</span>
+            <span className="dd-detail-rating" aria-label={`Rated ${product.rating} out of 5`}>
+              {Array.from({ length: 5 }, (_, i) => (
+                <i key={i} className={`bi ${i < product.rating ? 'bi-star-fill' : 'bi-star'}`} aria-hidden="true"></i>
+              ))}
+            </span>
+          </div>
+
+          <p className="dd-detail-desc">{product.description}</p>
+
+          <p className={`dd-stock ${inStock ? 'in' : 'out'}`}>
+            {inStock ? `In stock, ${product.quantity} available` : 'Out of stock'}
+          </p>
+
+          <div className="dd-detail-actions">
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={addToCart}
+              disabled={!inStock}
+            >
+              Add to cart
+            </button>
+            <button
+              type="button"
+              className={`dd-save-btn ${liked ? 'is-saved' : ''}`}
+              onClick={toggleLike}
+              aria-pressed={liked}
+              aria-label={liked ? 'Remove from saved items' : 'Save this product'}
+            >
+              <i className={`bi ${liked ? 'bi-heart-fill' : 'bi-heart'}`} aria-hidden="true"></i>
+            </button>
+          </div>
+
+          {features.length > 0 && (
+            <section className="dd-specs">
+              <h2>Specification</h2>
+              <ul className="dd-spec-list">
+                {features.map((f, i) => (
+                  <li key={i}>{f}</li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </div>
+
       </div>
     </div>
   );

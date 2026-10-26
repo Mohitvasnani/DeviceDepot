@@ -1,50 +1,155 @@
+/* Navbar: graphite bar, signal yellow reserved for the active item and the
+   brand mark, so the eye learns that yellow means "this one". */
+
 .navbar {
-  padding: 1rem 2rem;
-  background-color: #21618C !important;
+  padding: var(--dd-3) 0;
+  background-color: var(--dd-ink) !important;
+  border-bottom: 3px solid var(--dd-signal);
 }
 
-.nav-link {
-  color: #ffffff !important;
-  padding: 0.5rem 1rem;
+.navbar > .container-fluid {
+  width: 100%;
+  max-width: var(--dd-container);
+  margin-inline: auto;
+  padding-inline: var(--dd-4);
 }
 
 .navbar-brand {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #ffffff !important;
+  font-family: var(--dd-font-condensed);
+  font-size: var(--dd-text-lg);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--dd-surface) !important;
+  padding: 0;
 }
 
-.form-control {
-  width: 250px;
+.navbar-brand::after {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 3px;
+  background: var(--dd-signal);
 }
 
-.badge-danger {
-  background-color: #dc3545;
-  font-size: 0.75rem;
+/* Direct children only. A descendant selector here also matches the anchors
+   inside .dropdown-menu, which sits on white, and the !important made them
+   unreadable. */
+.navbar .navbar-nav > .nav-item > .nav-link {
+  color: #c9ced5;
+  padding: var(--dd-2) var(--dd-3);
+  font-size: var(--dd-text-sm);
+  font-weight: 500;
+  border-radius: var(--dd-radius);
+  transition: color 0.15s ease, background-color 0.15s ease;
 }
 
+.navbar .navbar-nav > .nav-item > .nav-link:hover,
+.navbar .navbar-nav > .nav-item > .nav-link:focus-visible {
+  color: var(--dd-surface);
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Yellow marks the page you are on. Dropdown toggles are excluded: they are
+   not destinations, and they would otherwise light up on every page. */
+.navbar .navbar-nav > .nav-item > .nav-link.active:not(.dropdown-toggle) {
+  color: var(--dd-ink);
+  background-color: var(--dd-signal);
+}
+
+/* Dropdown toggles are <button>, so reset the UA button styling */
+.navbar .nav-link.dropdown-toggle {
+  border: 0;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* Open state is a quiet highlight, not the yellow "you are here" marker */
+.navbar .navbar-nav > .nav-item > .nav-link.dropdown-toggle.show {
+  color: var(--dd-surface);
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.navbar :focus-visible {
+  outline: 2px solid var(--dd-signal);
+  outline-offset: 2px;
+}
+
+.navbar-toggler {
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.navbar-toggler-icon {
+  filter: invert(1) grayscale(1) brightness(1.6);
+}
+
+/* Dropdowns sit on white so they read against the dark bar.
+   Set Bootstrap's own dropdown variables rather than fighting its defaults
+   with !important, otherwise the link colour stays its faint grey. */
+.navbar .dropdown-menu {
+  --bs-dropdown-bg: var(--dd-surface);
+  --bs-dropdown-border-color: var(--dd-line);
+  --bs-dropdown-border-radius: var(--dd-radius);
+  --bs-dropdown-link-color: var(--dd-ink);
+  --bs-dropdown-link-hover-color: var(--dd-ink);
+  --bs-dropdown-link-hover-bg: var(--dd-surface-2);
+  --bs-dropdown-link-active-color: var(--dd-ink);
+  --bs-dropdown-link-active-bg: var(--dd-signal);
+  --bs-dropdown-padding-y: var(--dd-1);
+  --bs-dropdown-item-padding-y: var(--dd-2);
+  --bs-dropdown-item-padding-x: var(--dd-3);
+  box-shadow: var(--dd-shadow-up);
+  margin-top: var(--dd-2);
+  min-width: 11rem;
+}
+
+.navbar .dropdown-item {
+  border-radius: 3px;
+  font-size: var(--dd-text-sm);
+  font-weight: 500;
+  color: var(--dd-ink);
+}
+
+.navbar .dropdown-item:hover,
+.navbar .dropdown-item:focus-visible {
+  color: var(--dd-ink);
+  background-color: var(--dd-surface-2);
+}
+
+/* The current section gets the same yellow marker as the navbar */
+.navbar .dropdown-item.active {
+  color: var(--dd-ink);
+  background-color: var(--dd-signal);
+}
+
+.navbar .dropdown-item.dd-signout {
+  color: var(--dd-alert);
+  border: 0;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.navbar .dropdown-item.dd-signout:hover {
+  color: var(--dd-alert);
+  background-color: #fdeceC;
+}
+
+.navbar .dropdown-divider {
+  border-top-color: var(--dd-line-soft);
+  margin: var(--dd-1) 0;
+}
+
+/* Cart count bubble, if you add one later */
 .badge-notify {
-  top: -10px;
-  right: -10px;
-  padding: 5px 10px;
-  border-radius: 50%;
-  color: white;
-}
-
-.nav-item .nav-link.active {
-  color: #17a2b8 !important;
-}
-
-.dropdown-menu {
-  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-}
-
-.dropdown-menu.show {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-.dropdown-menu.hide {
-  transform: translateY(-10px);
-  opacity: 0;
+  top: -6px;
+  right: -6px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--dd-signal);
+  color: var(--dd-ink);
+  font-size: var(--dd-text-xs);
+  font-weight: 700;
 }

@@ -1,91 +1,107 @@
 import React, { useContext } from 'react';
 import { ProductsContext } from './Productcontext';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { toast } from 'react-toastify';
+import '../css/Productcard.css';
 
 function Productcard({ product, handleClick }) {
     const { likedProducts, removeLike, addToCart, addLike } = useContext(ProductsContext);
+    const isLiked = Boolean(likedProducts[product._id]);
+    const inStock = product.quantity > 0;
 
     const handleAddToCart = () => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            toast.warning('Please log in to add items to cart');
+        if (!localStorage.getItem('token')) {
+            toast.warning('Sign in to add items to your cart');
             return;
         }
         addToCart(product._id);
-        toast.success('Product added to cart!');
+        toast.success(`${product.name} added to cart`);
     };
 
     const handleToggleLike = () => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            toast.warning('Please log in to like products');
+        if (!localStorage.getItem('token')) {
+            toast.warning('Sign in to save items');
             return;
         }
-        if (likedProducts[product._id]) {
+        if (isLiked) {
             removeLike(product._id);
-            toast.info('Removed from liked items');
+            toast.info('Removed from saved items');
         } else {
             addLike(product._id);
-            toast.success('Added to liked items!');
+            toast.success('Saved');
         }
     };
 
+    const blurb = (product.description || '').length > 90
+        ? `${product.description.slice(0, 90).trimEnd()}...`
+        : product.description;
+
     return (
-        <div className="col-lg-3 col-md-6 col-sm-8 mt-3 mb-3">
-            <div className="card border-0 shadow-sm h-100">
-                <div className="position-relative">
-                    <img
-                        src={product.files[0]}
-                        className="card-img-top"
-                        alt={product.name}
-                        style={{ height: '300px', objectFit: 'contain', cursor: 'pointer' }}
+        <div className="col-12 col-sm-6 col-lg-3">
+            <article className="dd-card">
+                <div className="dd-card-media">
+                    <button
+                        type="button"
+                        className="dd-card-imgbtn"
                         onClick={() => handleClick(product)}
-                        onError={(e) => { e.target.src = 'https://placehold.co/300x300?text=No+Image' }}
-                    />
-                    <div className="position-absolute top-0 end-0 p-2">
-                        <i
-                            className={`bi ${likedProducts[product._id] ? 'bi-heart-fill' : 'bi-heart'} text-danger fs-4`}
-                            onClick={handleToggleLike}
-                            style={{ cursor: 'pointer' }}
-                        ></i>
-                    </div>
-                    <div className="position-absolute top-0 start-0 p-2">
-                        <span className="badge bg-secondary">{product.categories}</span>
-                    </div>
+                        aria-label={`View ${product.name}`}
+                    >
+                        <img
+                            src={product.files?.[0]}
+                            alt={product.name}
+                            loading="lazy"
+                            onError={(e) => { e.currentTarget.src = 'https://placehold.co/600x450/f3f4f6/6b737d/png?text=No+image'; }}
+                        />
+                    </button>
+
+                    <span className="dd-card-cat">{product.categories}</span>
+
+                    <button
+                        type="button"
+                        className={`dd-card-save ${isLiked ? 'is-saved' : ''}`}
+                        onClick={handleToggleLike}
+                        aria-pressed={isLiked}
+                        aria-label={isLiked ? `Remove ${product.name} from saved items` : `Save ${product.name}`}
+                    >
+                        <i className={`bi ${isLiked ? 'bi-heart-fill' : 'bi-heart'}`} aria-hidden="true"></i>
+                    </button>
+
+                    {!inStock && <span className="dd-card-oos">Out of stock</span>}
                 </div>
-                <div className="card-body d-flex flex-column">
-                    <h5 className="card-title">{product.name}</h5>
-                    <p className="card-text text-muted small">
-                        {product.description.length > 80
-                            ? `${product.description.substring(0, 80)}...`
-                            : product.description}
-                    </p>
-                    <div className="mt-auto">
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                            <h5 className="text-danger mb-0">£{product.price}</h5>
-                            <small className="text-warning">
-                                {'⭐'.repeat(Math.min(product.rating, 5))}
-                            </small>
+
+                <div className="dd-card-body">
+                    <h3 className="dd-card-title">
+                        <button type="button" onClick={() => handleClick(product)}>
+                            {product.name}
+                        </button>
+                    </h3>
+
+                    <p className="dd-card-blurb">{blurb}</p>
+
+                    <div className="dd-card-foot">
+                        <div className="dd-card-figures">
+                            <span className="dd-price dd-price-md">£{product.price}</span>
+                            <span className="dd-card-rating" aria-label={`Rated ${product.rating} out of 5`}>
+                                {Array.from({ length: 5 }, (_, i) => (
+                                    <i
+                                        key={i}
+                                        className={`bi ${i < product.rating ? 'bi-star-fill' : 'bi-star'}`}
+                                        aria-hidden="true"
+                                    ></i>
+                                ))}
+                            </span>
                         </div>
-                        {product.quantity > 0 ? (
-                            <button
-                                className="btn btn-primary w-100"
-                                onClick={handleAddToCart}
-                            >
-                                <i className="bi bi-cart-plus me-1"></i>Add to Cart
-                            </button>
-                        ) : (
-                            <button className="btn btn-secondary w-100" disabled>
-                                Out of Stock
-                            </button>
-                        )}
+
+                        <button
+                            type="button"
+                            className="btn btn-primary w-100"
+                            onClick={handleAddToCart}
+                            disabled={!inStock}
+                        >
+                            {inStock ? 'Add to cart' : 'Out of stock'}
+                        </button>
                     </div>
                 </div>
-            </div>
-            <ToastContainer />
+            </article>
         </div>
     );
 }

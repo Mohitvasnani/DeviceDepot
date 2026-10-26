@@ -1,0 +1,374 @@
+/* ==========================================================================
+   DeviceDepot design tokens and base styles
+   Load order matters: this file must be imported AFTER bootstrap in main.jsx
+   so these overrides win without !important.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Barlow+Condensed:wght@500;600;700&display=swap');
+
+:root {
+  /* --- colour ------------------------------------------------------------
+     Graphite ink on cool concrete, with safety yellow as the only action
+     colour. Yellow always carries dark text, the way real signage does. */
+  --dd-ink:        #15181c;   /* primary text, dark surfaces */
+  --dd-ink-soft:   #3d444d;   /* secondary text */
+  --dd-ink-faint:  #6b737d;   /* captions, meta */
+  --dd-concrete:   #e8e9eb;   /* page background */
+  --dd-surface:    #ffffff;   /* cards, panels */
+  --dd-surface-2:  #f3f4f6;   /* inset areas, image wells */
+  --dd-line:       #cfd3d8;   /* borders, rules */
+  --dd-line-soft:  #e2e5e8;
+
+  --dd-signal:       #ffc300; /* primary action */
+  --dd-signal-deep:  #e5ae00; /* hover/active */
+  --dd-signal-faint: #fff4cc; /* tints */
+
+  --dd-ok:    #1e7a4c;
+  --dd-warn:  #b4690e;
+  --dd-alert: #c02b2b;
+
+  /* --- type --------------------------------------------------------------
+     Modular scale, base 16px, ratio 1.25 */
+  --dd-font: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --dd-font-condensed: 'Barlow Condensed', 'Barlow', system-ui, sans-serif;
+
+  --dd-text-xs:  0.8rem;
+  --dd-text-sm:  0.9rem;
+  --dd-text-base: 1rem;
+  --dd-text-md:  1.25rem;
+  --dd-text-lg:  1.563rem;
+  --dd-text-xl:  1.953rem;
+  --dd-text-2xl: 2.441rem;
+  --dd-text-3xl: 3.052rem;
+
+  /* --- space -------------------------------------------------------------
+     4px base */
+  --dd-1: 0.25rem;
+  --dd-2: 0.5rem;
+  --dd-3: 0.75rem;
+  --dd-4: 1rem;
+  --dd-5: 1.5rem;
+  --dd-6: 2rem;
+  --dd-7: 3rem;
+  --dd-8: 4rem;
+  --dd-9: 6rem;
+
+  /* --- form --------------------------------------------------------------
+     Low radius throughout. Crates and panels, not pills. */
+  --dd-radius:    4px;
+  --dd-radius-lg: 6px;
+  --dd-shadow:    0 1px 2px rgba(21, 24, 28, 0.06), 0 2px 8px rgba(21, 24, 28, 0.04);
+  --dd-shadow-up: 0 2px 4px rgba(21, 24, 28, 0.08), 0 8px 24px rgba(21, 24, 28, 0.08);
+
+  --dd-container: 1200px;
+
+  /* --- bootstrap overrides ---------------------------------------------- */
+  --bs-primary: var(--dd-ink);
+  --bs-body-bg: var(--dd-concrete);
+  --bs-body-color: var(--dd-ink);
+  --bs-body-font-family: var(--dd-font);
+  --bs-border-color: var(--dd-line);
+  --bs-border-radius: var(--dd-radius);
+  --bs-border-radius-lg: var(--dd-radius-lg);
+  --bs-link-color: var(--dd-ink);
+  --bs-link-hover-color: var(--dd-ink-soft);
+}
+
+/* --------------------------------------------------------------------------
+   base
+   -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--dd-font);
+  font-size: var(--dd-text-base);
+  line-height: 1.55;
+  color: var(--dd-ink);
+  background-color: var(--dd-concrete);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--dd-font-condensed);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: 0.005em;
+  color: var(--dd-ink);
+  margin: 0 0 var(--dd-3);
+}
+
+h1 { font-size: var(--dd-text-3xl); font-weight: 700; }
+h2 { font-size: var(--dd-text-2xl); }
+h3 { font-size: var(--dd-text-xl); }
+h4 { font-size: var(--dd-text-lg); }
+h5 { font-size: var(--dd-text-md); }
+h6 { font-size: var(--dd-text-base); }
+
+p { margin: 0 0 var(--dd-4); max-width: 68ch; }
+
+a { text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+/* Visible keyboard focus everywhere. Bootstrap's default ring is too faint
+   against concrete. */
+:focus-visible {
+  outline: 2px solid var(--dd-ink);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   shell
+   -------------------------------------------------------------------------- */
+
+.dd-container {
+  width: 100%;
+  max-width: var(--dd-container);
+  margin-inline: auto;
+  padding-inline: var(--dd-4);
+}
+
+/* Section heading: left aligned, with a short signal rule above it.
+   The rule marks a section boundary, it is not decoration. */
+.dd-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--dd-4);
+  padding-top: var(--dd-5);
+  border-top: 2px solid var(--dd-ink);
+  margin-bottom: var(--dd-5);
+}
+
+.dd-section-head h2,
+.dd-section-head h3 {
+  margin: 0;
+  font-size: var(--dd-text-xl);
+  text-transform: none;
+}
+
+.dd-section-head .dd-count {
+  font-size: var(--dd-text-sm);
+  color: var(--dd-ink-faint);
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   buttons
+   -------------------------------------------------------------------------- */
+
+.btn {
+  --bs-btn-border-radius: var(--dd-radius);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--dd-signal);
+  --bs-btn-border-color: var(--dd-signal);
+  --bs-btn-color: var(--dd-ink);
+  --bs-btn-hover-bg: var(--dd-signal-deep);
+  --bs-btn-hover-border-color: var(--dd-signal-deep);
+  --bs-btn-hover-color: var(--dd-ink);
+  --bs-btn-active-bg: var(--dd-signal-deep);
+  --bs-btn-active-border-color: var(--dd-signal-deep);
+  --bs-btn-active-color: var(--dd-ink);
+  --bs-btn-disabled-bg: var(--dd-line);
+  --bs-btn-disabled-border-color: var(--dd-line);
+  --bs-btn-disabled-color: var(--dd-ink-faint);
+}
+
+.btn-success {
+  --bs-btn-bg: var(--dd-ok);
+  --bs-btn-border-color: var(--dd-ok);
+}
+
+.btn-outline-dark {
+  --bs-btn-color: var(--dd-ink);
+  --bs-btn-border-color: var(--dd-ink);
+  --bs-btn-hover-bg: var(--dd-ink);
+  --bs-btn-hover-color: var(--dd-surface);
+}
+
+/* --------------------------------------------------------------------------
+   price and spec figures
+   Condensed, tabular, so columns of prices line up.
+   -------------------------------------------------------------------------- */
+
+.dd-price {
+  font-family: var(--dd-font-condensed);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  color: var(--dd-ink);
+}
+
+.dd-price-lg { font-size: var(--dd-text-2xl); line-height: 1; }
+.dd-price-md { font-size: var(--dd-text-lg); line-height: 1; }
+
+/* --------------------------------------------------------------------------
+   loading skeletons
+   Render.com's free tier can take ~50s to wake, so these are load-bearing.
+   -------------------------------------------------------------------------- */
+
+.dd-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--dd-surface-2) 25%,
+    #e9ebee 37%,
+    var(--dd-surface-2) 63%
+  );
+  background-size: 400% 100%;
+  animation: dd-shimmer 1.4s ease infinite;
+  border-radius: var(--dd-radius);
+}
+
+@keyframes dd-shimmer {
+  0%   { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+.dd-skeleton-card {
+  background: var(--dd-surface);
+  border: 1px solid var(--dd-line-soft);
+  border-radius: var(--dd-radius-lg);
+  overflow: hidden;
+}
+
+.dd-skeleton-card .dd-skeleton-img { aspect-ratio: 4 / 3; width: 100%; }
+.dd-skeleton-card .dd-skeleton-line { height: 0.75rem; margin: var(--dd-3) var(--dd-4); }
+.dd-skeleton-card .dd-skeleton-line.short { width: 40%; }
+
+/* --------------------------------------------------------------------------
+   empty states
+   An empty screen is an invitation to act, not an apology.
+   -------------------------------------------------------------------------- */
+
+.dd-empty {
+  text-align: left;
+  padding: var(--dd-8) var(--dd-4);
+  border: 1px dashed var(--dd-line);
+  border-radius: var(--dd-radius-lg);
+  background: var(--dd-surface);
+}
+
+.dd-empty h4 { margin-bottom: var(--dd-2); }
+.dd-empty p { color: var(--dd-ink-soft); margin-bottom: var(--dd-4); }
+
+/* --------------------------------------------------------------------------
+   footer
+   One compact band. The previous four columns repeated the navbar and ran
+   to roughly 400px of links for a site with five real pages.
+   -------------------------------------------------------------------------- */
+
+.dd-footer {
+  background: var(--dd-ink);
+  color: #b9c0c8;
+  border-top: 3px solid var(--dd-signal);
+  margin-top: auto;
+}
+
+.dd-footer-inner {
+  width: 100%;
+  max-width: var(--dd-container);
+  margin-inline: auto;
+  padding: var(--dd-5) var(--dd-4);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--dd-5);
+  flex-wrap: wrap;
+}
+
+.dd-footer-brand {
+  display: flex;
+  align-items: baseline;
+  gap: var(--dd-3);
+}
+
+.dd-footer-logo {
+  font-family: var(--dd-font-condensed);
+  font-size: var(--dd-text-md);
+  font-weight: 700;
+  color: var(--dd-surface);
+}
+
+.dd-footer-logo::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 3px;
+  background: var(--dd-signal);
+}
+
+.dd-footer-place {
+  font-size: var(--dd-text-sm);
+  color: #8d959e;
+}
+
+.dd-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--dd-2) var(--dd-5);
+}
+
+.dd-footer-nav a {
+  color: #b9c0c8;
+  font-size: var(--dd-text-sm);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.dd-footer-nav a:hover,
+.dd-footer-nav a:focus-visible {
+  color: var(--dd-surface);
+  text-decoration: underline;
+}
+
+.dd-footer-base {
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--dd-4);
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: var(--dd-container);
+  margin-inline: auto;
+  padding: var(--dd-3) var(--dd-4);
+  font-size: var(--dd-text-xs);
+  color: #8d959e;
+}
+
+.dd-footer-base a {
+  color: #8d959e;
+  text-decoration: none;
+}
+
+.dd-footer-base a:hover { color: var(--dd-surface); text-decoration: underline; }
+
+@media (max-width: 575.98px) {
+  .dd-footer-inner { gap: var(--dd-4); }
+  .dd-footer-brand { flex-direction: column; gap: 2px; }
+  .dd-footer-nav { gap: var(--dd-2) var(--dd-4); }
+}
+
+/* --------------------------------------------------------------------------
+   motion
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

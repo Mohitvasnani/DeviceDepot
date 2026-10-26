@@ -9,6 +9,7 @@ export const ProductsProvider = ({ children }) => {
     const [likedProducts, setLikedProducts] = useState({});
     const [products, setProducts] = useState([]);
     const [likedItems, setLikedItems] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
@@ -18,12 +19,16 @@ export const ProductsProvider = ({ children }) => {
     }, []);
 
     const fetchProducts = async () => {
+        setLoading(true);
+        setError(null);
         try {
             const response = await axios.get(`${API_URL}/api/product/allproducts`);
-            setProducts(response.data);
-        } catch (error) {
-            setError(error.message);
-            console.error('Error fetching products:', error);
+            setProducts(Array.isArray(response.data) ? response.data : []);
+        } catch (err) {
+            setError(err.message);
+            console.error('Error fetching products:', err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -104,7 +109,7 @@ export const ProductsProvider = ({ children }) => {
                     delete newState[productId];
                     return newState;
                 });
-                setLikedItems(prevState => 
+                setLikedItems(prevState =>
                     prevState.filter(item => item.productId !== productId)
                 );
             } else {
@@ -123,14 +128,17 @@ export const ProductsProvider = ({ children }) => {
     };
 
     return (
-        <ProductsContext.Provider value={{ 
-            products, 
-            likedProducts, 
-            likedItems, 
-            removeLike, 
-            addToCart, 
-            addLike, 
-            fetchLikedProducts 
+        <ProductsContext.Provider value={{
+            products,
+            loading,
+            error,
+            refetchProducts: fetchProducts,
+            likedProducts,
+            likedItems,
+            removeLike,
+            addToCart,
+            addLike,
+            fetchLikedProducts
         }}>
             {children}
         </ProductsContext.Provider>
