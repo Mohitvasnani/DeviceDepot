@@ -285,6 +285,12 @@ a { text-decoration-thickness: 1px; text-underline-offset: 2px; }
   overflow: hidden;
 }
 
+.dd-wake-notice {
+  margin: 0 0 var(--dd-4);
+  color: var(--dd-ink-faint);
+  font-size: var(--dd-text-sm);
+}
+
 .dd-skeleton-card .dd-skeleton-img { aspect-ratio: 4 / 3; width: 100%; }
 .dd-skeleton-card .dd-skeleton-line { height: 0.75rem; margin: var(--dd-3) var(--dd-4); }
 .dd-skeleton-card .dd-skeleton-line.short { width: 40%; }

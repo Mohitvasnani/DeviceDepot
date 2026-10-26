@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate, NavLink } from 'react-router-dom';
 import Productcard from '../components/Productcard';
 import { ProductsContext } from '../components/Productcontext';
+import WakeNotice from '../components/WakeNotice';
 import '../css/Home.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -113,7 +114,12 @@ function Home() {
             )}
           </div>
 
-          {loading && <SkeletonRow />}
+          {loading && (
+            <>
+              <WakeNotice />
+              <SkeletonRow />
+            </>
+          )}
 
           {!loading && error && (
             <div className="dd-empty">

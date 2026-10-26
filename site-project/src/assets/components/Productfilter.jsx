@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { ProductsContext } from './Productcontext';
 import Productcard from './Productcard';
+import WakeNotice from './WakeNotice';
 
 const ProductFilter = ({ category }) => {
     const { products, loading, error, refetchProducts } = useContext(ProductsContext);
@@ -13,6 +14,8 @@ const ProductFilter = ({ category }) => {
 
     if (loading) {
         return (
+            <>
+            <WakeNotice />
             <div className="row home_display_card">
                 {Array.from({ length: 8 }, (_, i) => (
                     <div className="col-12 col-sm-6 col-lg-3" key={i}>
@@ -24,6 +27,7 @@ const ProductFilter = ({ category }) => {
                     </div>
                 ))}
             </div>
+            </>
         );
     }
 
