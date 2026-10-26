@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../css/table.css';
 
@@ -83,8 +83,7 @@ function ViewOrders() {
 
   return (
     <div className="table-wrapper">
-      <ToastContainer />
-      <h2 className="mb-4">View Orders</h2>
+<h2 className="mb-4">View Orders</h2>
 
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h5 className="mb-0">Total Orders: {orders.length}</h5>

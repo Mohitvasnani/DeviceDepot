@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../css/AddProducts.css';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -102,8 +102,7 @@ function AddProducts() {
 
     return (
         <div className="container mt-5">
-            <ToastContainer />
-            <div className="card-admin shadow p-4 product-form">
+<div className="card-admin shadow p-4 product-form">
                 <h2 className="mb-4 text-center">Add New Product</h2>
                 <form onSubmit={handleCreateProduct} className="row g-2">
                     <div className="col-md-5 mb-3">

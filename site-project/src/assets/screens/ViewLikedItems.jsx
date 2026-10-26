@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { ProductsContext } from '../components/Productcontext';
 import { useNavigate } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../css/ViewLikedItems.css';
 
@@ -24,8 +24,7 @@ const ViewLikedItems = () => {
     if (likedItems.length === 0) {
         return (
             <div className="d-flex flex-column justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
-                <ToastContainer />
-                <i className="bi bi-heart" style={{ fontSize: '4rem', color: '#ccc' }}></i>
+<i className="bi bi-heart" style={{ fontSize: '4rem', color: '#ccc' }}></i>
                 <h3 className="mt-3 text-muted">No liked items yet</h3>
                 <p className="text-muted">Browse products and click the heart icon to save them here</p>
                 <button
@@ -40,8 +39,7 @@ const ViewLikedItems = () => {
 
     return (
         <div className="container container-liked mt-5">
-            <ToastContainer />
-            <h2 className="mb-4">
+<h2 className="mb-4">
                 Liked Items
                 <span className="badge bg-secondary ms-2">{likedItems.length}</span>
             </h2>

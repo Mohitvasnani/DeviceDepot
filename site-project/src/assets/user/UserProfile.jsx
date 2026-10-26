@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../css/profile.css';
@@ -107,8 +107,7 @@ function UserProfile() {
 
   return (
     <div className="container profile-cont">
-      <ToastContainer />
-      <div className="profile-card">
+<div className="profile-card">
         <div className="text-center mb-4">
           <div
             className="rounded-circle bg-primary d-inline-flex justify-content-center align-items-center text-white mb-3"

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../css/table.css';
@@ -85,8 +85,7 @@ function TrackOrders() {
   if (orders.length === 0) {
     return (
       <div className="d-flex flex-column justify-content-center align-items-center" style={{ minHeight: '300px' }}>
-        <ToastContainer />
-        <i className="bi bi-bag-x" style={{ fontSize: '4rem', color: '#ccc' }}></i>
+<i className="bi bi-bag-x" style={{ fontSize: '4rem', color: '#ccc' }}></i>
         <h3 className="mt-3 text-muted">No orders yet</h3>
         <p className="text-muted">Your order history will appear here</p>
       </div>
@@ -95,8 +94,7 @@ function TrackOrders() {
 
   return (
     <div className="container">
-      <ToastContainer />
-      <h2 className="my-4">Your Orders</h2>
+<h2 className="my-4">Your Orders</h2>
       <p className="text-muted mb-4">
         {orders.length} order{orders.length !== 1 ? 's' : ''} found
       </p>

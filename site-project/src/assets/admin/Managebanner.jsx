@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Link } from 'react-router-dom';
 
@@ -69,8 +69,7 @@ function ManageBanners() {
 
   return (
     <div className="table-wrapper">
-      <ToastContainer />
-      <h2 className="mb-4">Manage Banners</h2>
+<h2 className="mb-4">Manage Banners</h2>
       <div className="d-flex justify-content-between mb-3">
         <Link to="/admin/addbanner" className="btn btn-success">
           Add New Banner

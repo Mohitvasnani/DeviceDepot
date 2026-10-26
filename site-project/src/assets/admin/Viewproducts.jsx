@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import '../css/table.css';
 import axios from 'axios';
 import { useOutletContext } from 'react-router-dom';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -100,8 +100,7 @@ function Viewproducts() {
 
   return (
     <div className="table-wrapper">
-      <ToastContainer />
-      <div className="d-flex justify-content-between align-items-center mb-4">
+<div className="d-flex justify-content-between align-items-center mb-4">
         <h2>View Users ({users.length})</h2>
         <input
           type="text"

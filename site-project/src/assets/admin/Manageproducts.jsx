@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../css/table.css';
 import { Link } from 'react-router-dom';
@@ -73,8 +73,7 @@ function ManageProducts() {
 
   return (
     <div className="table-wrapper">
-      <ToastContainer />
-      <h2 className="mb-4">Manage Products</h2>
+<h2 className="mb-4">Manage Products</h2>
       <div className="d-flex justify-content-between mb-3">
         <Link to="/admin/addproduct" className="btn btn-success">
           Add New Product

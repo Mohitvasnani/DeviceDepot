@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../css/enterEmail.css';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -70,8 +70,7 @@ const EnterNewPassword = () => {
 
   return (
     <div className="container cont-em mt-5">
-      <ToastContainer />
-      <div className="card-em">
+<div className="card-em">
         <div className="card-body">
           <h1 className="card-title text-center">Set New Password</h1>
           <form onSubmit={handleSubmit} className="mtt-4 mt-4 p-4">
