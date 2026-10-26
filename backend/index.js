@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require("body-parser");
 const dotenv = require('dotenv').config();
@@ -43,6 +44,17 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static('public/Images'))
 
 app.options('*', cors(corsOptions));
+
+// Lightweight wake-up and keep-alive endpoint. Pinged by the portfolio,
+// the frontend on load, and an optional scheduler. Touching Mongo as well
+// keeps the Atlas cluster counted as active.
+app.get('/health', (req, res) => {
+  const db = mongoose.connection;
+  if (db.readyState === 1 && db.db) {
+    db.db.admin().ping().catch(() => {});
+  }
+  res.json({ ok: true, db: db.readyState === 1 });
+});
 
 app.use("/api/user", authRouter);
 app.use("/api/product", productRouter);
