@@ -18,13 +18,13 @@ const sendEmail = async(req,res)=>{
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: "demouser2002call2@gmail.com",
-          pass: "cbyb cgcl wqin szdf"
+          user: process.env.EMAIL,
+          pass: process.env.PASSWORD
         }
       });
     
       const mailOptions = {
-        from: "demouser2002call2@gmail.com",
+        from: process.env.EMAIL,
         to: email,
         subject: 'Your OTP for Password Reset',
         text: `Your OTP for password reset is: ${otp}. It is valid for 15 minutes.`

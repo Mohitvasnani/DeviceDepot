@@ -71,24 +71,9 @@ body {
     width: 840px;
     height: auto;
 }
-.userdash {
-  background-color: #343a40;
-  color: #ffffff;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  min-height: 100vh !important;
-}
 
-.dashboard_area {
-  padding: 20px;
-  background: linear-gradient(135deg, #6e48aa, #9d50bb);
-  font-family: 'Roboto', sans-serif;
-  max-height: 100vh;
-  overflow-y: auto;
 
-}
+
 
 /* admin_dashboard.css */
 

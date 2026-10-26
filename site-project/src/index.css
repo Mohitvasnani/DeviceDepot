@@ -10,18 +10,18 @@
   /* --- colour ------------------------------------------------------------
      Graphite ink on cool concrete, with safety yellow as the only action
      colour. Yellow always carries dark text, the way real signage does. */
-  --dd-ink:        #15181c;   /* primary text, dark surfaces */
-  --dd-ink-soft:   #3d444d;   /* secondary text */
-  --dd-ink-faint:  #6b737d;   /* captions, meta */
-  --dd-concrete:   #e8e9eb;   /* page background */
-  --dd-surface:    #ffffff;   /* cards, panels */
-  --dd-surface-2:  #f3f4f6;   /* inset areas, image wells */
-  --dd-line:       #cfd3d8;   /* borders, rules */
-  --dd-line-soft:  #e2e5e8;
+  --dd-ink:        #141412;   /* primary text, dark surfaces */
+  --dd-ink-soft:   #3f3e38;   /* secondary text */
+  --dd-ink-faint:  #6f6d64;   /* captions, meta */
+  --dd-concrete:   #ecebe5;   /* page background */
+  --dd-surface:    #fbfaf7;   /* cards, panels, warmed to match the logo */
+  --dd-surface-2:  #f3f1ea;   /* inset areas, image wells */
+  --dd-line:       #d7d4ca;   /* borders, rules */
+  --dd-line-soft:  #e7e4db;
 
-  --dd-signal:       #ffc300; /* primary action */
-  --dd-signal-deep:  #e5ae00; /* hover/active */
-  --dd-signal-faint: #fff4cc; /* tints */
+  --dd-signal:       #f5ce2e; /* primary action */
+  --dd-signal-deep:  #ddb728; /* hover/active */
+  --dd-signal-faint: #fcf3d2; /* tints */
 
   --dd-ok:    #1e7a4c;
   --dd-warn:  #b4690e;
@@ -57,8 +57,8 @@
      Low radius throughout. Crates and panels, not pills. */
   --dd-radius:    4px;
   --dd-radius-lg: 6px;
-  --dd-shadow:    0 1px 2px rgba(21, 24, 28, 0.06), 0 2px 8px rgba(21, 24, 28, 0.04);
-  --dd-shadow-up: 0 2px 4px rgba(21, 24, 28, 0.08), 0 8px 24px rgba(21, 24, 28, 0.08);
+  --dd-shadow:    0 1px 2px rgba(20, 20, 18, 0.06), 0 2px 8px rgba(20, 20, 18, 0.04);
+  --dd-shadow-up: 0 2px 4px rgba(20, 20, 18, 0.08), 0 8px 24px rgba(20, 20, 18, 0.08);
 
   --dd-container: 1200px;
 
@@ -82,7 +82,16 @@
 *::before,
 *::after { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; }
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  /* Anchored jumps clear the sticky navbar */
+  scroll-padding-top: 84px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
 
 body {
   margin: 0;
@@ -169,6 +178,8 @@ a { text-decoration-thickness: 1px; text-underline-offset: 2px; }
 }
 
 .btn-primary {
+  box-shadow: 0 1px 2px rgba(20, 20, 18, 0.08);
+  transition: box-shadow 0.18s ease, transform 0.18s ease, background-color 0.15s ease;
   --bs-btn-bg: var(--dd-signal);
   --bs-btn-border-color: var(--dd-signal);
   --bs-btn-color: var(--dd-ink);
@@ -183,6 +194,19 @@ a { text-decoration-thickness: 1px; text-underline-offset: 2px; }
   --bs-btn-disabled-color: var(--dd-ink-faint);
 }
 
+/* The warm halo is the brand colour spilling, not a neon glow */
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(245, 206, 46, 0.55);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(20, 20, 18, 0.12);
+}
+
+.btn-primary:disabled { box-shadow: none; }
+
 .btn-success {
   --bs-btn-bg: var(--dd-ok);
   --bs-btn-border-color: var(--dd-ok);
@@ -193,6 +217,27 @@ a { text-decoration-thickness: 1px; text-underline-offset: 2px; }
   --bs-btn-border-color: var(--dd-ink);
   --bs-btn-hover-bg: var(--dd-ink);
   --bs-btn-hover-color: var(--dd-surface);
+}
+
+/* Navbar follows the page. The catalogue is long now, so the cart should not
+   need a scroll back to the top.
+
+   Frosted rather than solid: it sits over content while scrolling, which is
+   the one place on this site where glass says something useful, that there is
+   page underneath. Applied here only. Backdrop filters are expensive, and a
+   blurred layer per section would cost far more than it is worth. */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  background-color: rgba(20, 20, 18, 0.80) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  backdrop-filter: blur(16px) saturate(170%);
+}
+
+/* Older browsers get the solid bar rather than a see-through one */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .navbar { background-color: var(--dd-ink) !important; }
 }
 
 /* --------------------------------------------------------------------------
@@ -220,7 +265,7 @@ a { text-decoration-thickness: 1px; text-underline-offset: 2px; }
   background: linear-gradient(
     90deg,
     var(--dd-surface-2) 25%,
-    #e9ebee 37%,
+    #eeebe3 37%,
     var(--dd-surface-2) 63%
   );
   background-size: 400% 100%;
@@ -261,6 +306,119 @@ a { text-decoration-thickness: 1px; text-underline-offset: 2px; }
 .dd-empty p { color: var(--dd-ink-soft); margin-bottom: var(--dd-4); }
 
 /* --------------------------------------------------------------------------
+   about page carousel
+   During a Bootstrap slide both items are in the DOM at once. With nothing
+   fixing the height, .carousel-inner grew to fit them and the block jumped
+   300px -> 320px -> 300px on every transition, shoving the page down and
+   back every three seconds. Pinning the ratio on both removes the jump.
+   -------------------------------------------------------------------------- */
+
+.about_carousel {
+  border-radius: var(--dd-radius-lg);
+  overflow: hidden;
+}
+
+.about_carousel .carousel-inner {
+  aspect-ratio: 4 / 3;
+  height: auto;
+}
+
+.about_carousel .carousel-item,
+.about_slide {
+  aspect-ratio: 4 / 3;
+  height: 100%;
+  object-fit: cover;
+}
+
+.about_carousel .carousel-control-prev-icon,
+.about_carousel .carousel-control-next-icon {
+  background-color: rgba(20, 20, 18, 0.55);
+  border-radius: 50%;
+  padding: var(--dd-4);
+  background-size: 45%;
+}
+
+/* --------------------------------------------------------------------------
+   toasts
+   react-toastify, themed to the design system. Default toastify is coloured
+   blobs with heavy rounding; these are white panels matching the cards, with
+   a 3px status bar down the left edge carrying the meaning.
+   Imported after ReactToastify.css in main.jsx, so no !important needed.
+   -------------------------------------------------------------------------- */
+
+:root {
+  --toastify-font-family: var(--dd-font);
+  --toastify-toast-width: 340px;
+  --toastify-toast-min-height: 56px;
+  --toastify-color-light: var(--dd-surface);
+  --toastify-text-color-light: var(--dd-ink);
+  --toastify-color-success: var(--dd-ok);
+  --toastify-color-error: var(--dd-alert);
+  --toastify-color-warning: var(--dd-warn);
+  --toastify-color-info: var(--dd-ink-soft);
+  --toastify-icon-color-success: var(--dd-ok);
+  --toastify-icon-color-error: var(--dd-alert);
+  --toastify-icon-color-warning: var(--dd-warn);
+  --toastify-icon-color-info: var(--dd-ink-soft);
+}
+
+.Toastify__toast {
+  border: 1px solid var(--dd-line);
+  border-left: 3px solid var(--dd-ink-faint);
+  border-radius: var(--dd-radius);
+  box-shadow: var(--dd-shadow-up);
+  padding: var(--dd-3) var(--dd-4);
+  font-size: var(--dd-text-sm);
+  line-height: 1.45;
+  color: var(--dd-ink);
+}
+
+.Toastify__toast--success { border-left-color: var(--dd-ok); }
+.Toastify__toast--error   { border-left-color: var(--dd-alert); }
+.Toastify__toast--warning { border-left-color: var(--dd-warn); }
+.Toastify__toast--info    { border-left-color: var(--dd-ink-soft); }
+
+.Toastify__toast-body {
+  padding: 0;
+  font-weight: 500;
+  align-items: flex-start;
+}
+
+.Toastify__toast-icon { width: 18px; margin-inline-end: var(--dd-3); }
+
+.Toastify__close-button {
+  color: var(--dd-ink-faint);
+  opacity: 1;
+  align-self: center;
+}
+
+.Toastify__close-button:hover { color: var(--dd-ink); }
+
+/* A hairline along the bottom edge rather than a thick coloured bar */
+.Toastify__progress-bar {
+  height: 2px;
+  opacity: 1 !important;
+  background: var(--dd-line);
+}
+
+.Toastify__progress-bar--success { background: var(--dd-ok); }
+.Toastify__progress-bar--error   { background: var(--dd-alert); }
+.Toastify__progress-bar--warning { background: var(--dd-warn); }
+.Toastify__progress-bar--info    { background: var(--dd-ink-faint); }
+
+@media (max-width: 480px) {
+  .Toastify__toast-container {
+    width: calc(100vw - var(--dd-4) * 2);
+    left: var(--dd-4);
+    right: var(--dd-4);
+    bottom: var(--dd-4);
+    margin: 0;
+  }
+
+  .Toastify__toast { margin-bottom: var(--dd-2); }
+}
+
+/* --------------------------------------------------------------------------
    footer
    One compact band. The previous four columns repeated the navbar and ran
    to roughly 400px of links for a site with five real pages.
@@ -268,7 +426,7 @@ a { text-decoration-thickness: 1px; text-underline-offset: 2px; }
 
 .dd-footer {
   background: var(--dd-ink);
-  color: #b9c0c8;
+  color: #bdb9ad;
   border-top: 3px solid var(--dd-signal);
   margin-top: auto;
 }
@@ -309,7 +467,7 @@ a { text-decoration-thickness: 1px; text-underline-offset: 2px; }
 
 .dd-footer-place {
   font-size: var(--dd-text-sm);
-  color: #8d959e;
+  color: #86837a;
 }
 
 .dd-footer-nav {
@@ -319,7 +477,7 @@ a { text-decoration-thickness: 1px; text-underline-offset: 2px; }
 }
 
 .dd-footer-nav a {
-  color: #b9c0c8;
+  color: #bdb9ad;
   font-size: var(--dd-text-sm);
   text-decoration: none;
   transition: color 0.15s ease;
@@ -342,11 +500,11 @@ a { text-decoration-thickness: 1px; text-underline-offset: 2px; }
   margin-inline: auto;
   padding: var(--dd-3) var(--dd-4);
   font-size: var(--dd-text-xs);
-  color: #8d959e;
+  color: #86837a;
 }
 
 .dd-footer-base a {
-  color: #8d959e;
+  color: #86837a;
   text-decoration: none;
 }
 
@@ -357,6 +515,385 @@ a { text-decoration-thickness: 1px; text-underline-offset: 2px; }
   .dd-footer-brand { flex-direction: column; gap: 2px; }
   .dd-footer-nav { gap: var(--dd-2) var(--dd-4); }
 }
+
+/* --------------------------------------------------------------------------
+   dashboards (admin and user)
+   These screens were on raw Bootstrap: a #343a40 sidebar and, in the admin
+   case, a purple gradient content area that matched nothing else on the site.
+   -------------------------------------------------------------------------- */
+
+.dd-dash {
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  min-height: calc(100vh - 160px);
+  background: var(--dd-concrete);
+}
+
+/* --- sidebar ------------------------------------------------------------ */
+
+.dd-dash-side {
+  display: flex;
+  flex-direction: column;
+  background: var(--dd-ink);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  padding: var(--dd-5) var(--dd-3);
+}
+
+.dd-dash-label {
+  margin: 0 var(--dd-3) var(--dd-4);
+  font-family: var(--dd-font-condensed);
+  font-size: var(--dd-text-md);
+  font-weight: 700;
+  color: var(--dd-surface);
+}
+
+.dd-dash-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dd-dash-link {
+  display: flex;
+  align-items: center;
+  gap: var(--dd-3);
+  padding: var(--dd-3);
+  border-radius: var(--dd-radius);
+  color: #bdb9ad;
+  font-size: var(--dd-text-sm);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.dd-dash-link i { font-size: 1rem; width: 1.1em; text-align: center; }
+
+.dd-dash-link:hover,
+.dd-dash-link:focus-visible {
+  color: var(--dd-surface);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* Same yellow marker the navbar uses for the current page */
+.dd-dash-link.active {
+  color: var(--dd-ink);
+  background: var(--dd-signal);
+}
+
+.dd-dash-link.active i { color: var(--dd-ink); }
+
+.dd-dash-badge {
+  margin-left: auto;
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--dd-surface);
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.dd-dash-link.active .dd-dash-badge {
+  background: rgba(20, 20, 18, 0.18);
+  color: var(--dd-ink);
+}
+
+.dd-dash-signout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--dd-2);
+  margin-top: auto;
+  padding: var(--dd-3);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--dd-radius);
+  background: none;
+  color: #bdb9ad;
+  font-size: var(--dd-text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.dd-dash-signout:hover {
+  color: var(--dd-surface);
+  border-color: var(--dd-alert);
+  background: var(--dd-alert);
+}
+
+/* --- content ------------------------------------------------------------ */
+
+.dd-dash-main {
+  padding: var(--dd-6);
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.dd-dash-main > h1,
+.dd-dash-main > h2,
+.dd-dash-main > h3 {
+  padding-top: var(--dd-2);
+  border-top: 2px solid var(--dd-ink);
+  margin-bottom: var(--dd-5);
+}
+
+@media (max-width: 991.98px) {
+  .dd-dash { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+
+  .dd-dash-side { padding: var(--dd-4); }
+
+  .dd-dash-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--dd-2);
+  }
+
+  .dd-dash-link { padding: var(--dd-2) var(--dd-3); }
+
+  .dd-dash-signout { margin-top: var(--dd-4); }
+
+  .dd-dash-main { padding: var(--dd-4); }
+}
+
+/* --------------------------------------------------------------------------
+   tables and profile cards, used across both dashboards
+   -------------------------------------------------------------------------- */
+
+.table-wrapper,
+.profile-card {
+  padding: var(--dd-5);
+  background: var(--dd-surface);
+  border: 1px solid var(--dd-line-soft);
+  border-radius: var(--dd-radius-lg);
+  box-shadow: var(--dd-shadow);
+}
+
+.profile-cont { max-width: 860px; margin: 0 auto; }
+
+.profile-title {
+  font-family: var(--dd-font-condensed);
+  font-size: var(--dd-text-xl);
+  font-weight: 600;
+  text-align: left;
+  color: var(--dd-ink);
+  padding-top: var(--dd-2);
+  border-top: 2px solid var(--dd-ink);
+  margin-bottom: var(--dd-5);
+}
+
+.dd-dash-main .table,
+.table-wrapper .table {
+  --bs-table-bg: transparent;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: var(--dd-ink);
+  font-size: var(--dd-text-sm);
+  margin-bottom: 0;
+}
+
+.dd-dash-main .table thead th,
+.table-wrapper .table thead th {
+  padding: var(--dd-2) var(--dd-3);
+  border-bottom: 2px solid var(--dd-ink);
+  background: transparent;
+  color: var(--dd-ink-faint);
+  font-size: var(--dd-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.dd-dash-main .table td,
+.table-wrapper .table td {
+  padding: var(--dd-3);
+  border-bottom: 1px solid var(--dd-line-soft);
+  background: transparent;
+  vertical-align: middle;
+}
+
+.dd-dash-main .table tbody tr:hover td,
+.table-wrapper .table tbody tr:hover td {
+  background: var(--dd-surface-2);
+}
+
+.dd-dash-main .table-striped tbody tr:nth-of-type(odd) td,
+.table-wrapper .table-striped tbody tr:nth-of-type(odd) td {
+  background: transparent;
+}
+
+.dd-dash-main .table img,
+.table-wrapper .table img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  background: var(--dd-surface-2);
+  border: 1px solid var(--dd-line-soft);
+  border-radius: var(--dd-radius);
+  padding: 2px;
+}
+
+/* Bootstrap's blue badge was the only blue on the site */
+.badge-primary,
+.dd-dash-main .badge.bg-primary {
+  background-color: var(--dd-signal) !important;
+  color: var(--dd-ink) !important;
+}
+
+/* --------------------------------------------------------------------------
+   forms (admin add/edit product, banners, profile)
+   Bootstrap's form defaults were the last place on the site still using its
+   blue focus ring and grey borders.
+   -------------------------------------------------------------------------- */
+
+.form-label {
+  display: block;
+  font-size: var(--dd-text-xs);
+  font-weight: 600;
+  color: var(--dd-ink-soft);
+  margin-bottom: var(--dd-1);
+}
+
+.form-control,
+.form-select,
+textarea.form-control {
+  background-color: var(--dd-surface);
+  border: 1px solid var(--dd-line);
+  border-radius: var(--dd-radius);
+  padding: var(--dd-2) var(--dd-3);
+  font-family: var(--dd-font);
+  font-size: var(--dd-text-base);
+  color: var(--dd-ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--dd-ink);
+  box-shadow: 0 0 0 3px var(--dd-signal-faint);
+  outline: none;
+}
+
+.form-control::placeholder { color: var(--dd-ink-faint); }
+
+textarea.form-control { resize: vertical; min-height: 6rem; }
+
+/* --- form cards --------------------------------------------------------- */
+
+.product-form,
+.banner-form,
+.card-admin {
+  background-color: var(--dd-surface);
+  border: 1px solid var(--dd-line-soft);
+  border-radius: var(--dd-radius-lg);
+  box-shadow: var(--dd-shadow);
+  padding: var(--dd-6);
+}
+
+/* Bootstrap's .shadow is also on these; keep ours */
+.product-form.shadow,
+.banner-form.shadow,
+.card-admin.shadow { box-shadow: var(--dd-shadow) !important; }
+
+/* --- upload wells -------------------------------------------------------
+   AddProducts.css declares .upload-box twice with different sizes, so the
+   second quietly won. One definition, sized by its container instead. */
+
+.upload-box {
+  position: relative;
+  width: 100%;
+  /* Fixed height, not aspect-ratio. A ratio on a full-width box has no
+     height ceiling, so it grew to whatever the column gave it. */
+  height: 170px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--dd-surface-2);
+  border: 2px dashed var(--dd-line);
+  border-radius: var(--dd-radius);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.upload-box:hover,
+.upload-box:focus-within {
+  border-color: var(--dd-signal-deep);
+  background: var(--dd-signal-faint);
+}
+
+.upload-box img,
+.uploaded-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 0;
+  padding: var(--dd-2);
+}
+
+.upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--dd-1);
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  text-align: center;
+  cursor: pointer;
+  color: var(--dd-ink-faint);
+  font-size: var(--dd-text-xs);
+  font-weight: 600;
+}
+
+.upload-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--dd-1);
+  height: 100%;
+  color: var(--dd-ink-faint);
+  font-size: var(--dd-text-xs);
+}
+
+.upload-icon .bi { font-size: 1.6rem; }
+
+/* The add-product screen lays four of these in a row */
+.row.g-2 .upload-box { height: 130px; }
+
+@media (max-width: 575.98px) {
+  .upload-box, .row.g-2 .upload-box { height: 120px; }
+}
+
+/* --- remaining Bootstrap button colours ---------------------------------- */
+
+.btn-danger {
+  --bs-btn-bg: var(--dd-alert);
+  --bs-btn-border-color: var(--dd-alert);
+  --bs-btn-hover-bg: #a82424;
+  --bs-btn-hover-border-color: #a82424;
+}
+
+.btn-outline-danger {
+  --bs-btn-color: var(--dd-alert);
+  --bs-btn-border-color: var(--dd-alert);
+  --bs-btn-hover-bg: var(--dd-alert);
+  --bs-btn-hover-border-color: var(--dd-alert);
+}
+
+.btn-secondary {
+  --bs-btn-bg: var(--dd-ink-soft);
+  --bs-btn-border-color: var(--dd-ink-soft);
+  --bs-btn-hover-bg: var(--dd-ink);
+  --bs-btn-hover-border-color: var(--dd-ink);
+}
+
+/* Forms inside a dashboard do not need Bootstrap's big top margin */
+.dd-dash-main .container.mt-5 { margin-top: 0 !important; padding: 0; max-width: none; }
 
 /* --------------------------------------------------------------------------
    motion

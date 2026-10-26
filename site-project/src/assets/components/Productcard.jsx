@@ -1,24 +1,33 @@
-import React, { useContext } from 'react';
+import React, { memo, useContext, useEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { ProductsContext } from './Productcontext';
+import { addItem } from '../../store/cartSlice';
+import { selectIsAuthenticated } from '../../store/authSlice';
 import { toast } from 'react-toastify';
 import '../css/Productcard.css';
 
 function Productcard({ product, handleClick }) {
-    const { likedProducts, removeLike, addToCart, addLike } = useContext(ProductsContext);
+    const { likedProducts, removeLike, addLike } = useContext(ProductsContext);
+    const dispatch = useDispatch();
+    const isAuthenticated = useSelector(selectIsAuthenticated);
     const isLiked = Boolean(likedProducts[product._id]);
     const inStock = product.quantity > 0;
 
-    const handleAddToCart = () => {
-        if (!localStorage.getItem('token')) {
+    const handleAddToCart = async () => {
+        if (!isAuthenticated) {
             toast.warning('Sign in to add items to your cart');
             return;
         }
-        addToCart(product._id);
-        toast.success(`${product.name} added to cart`);
+        try {
+            await dispatch(addItem(product._id)).unwrap();
+            toast.success(`${product.name} added to cart`);
+        } catch (message) {
+            toast.error(message || 'Could not add to cart');
+        }
     };
 
     const handleToggleLike = () => {
-        if (!localStorage.getItem('token')) {
+        if (!isAuthenticated) {
             toast.warning('Sign in to save items');
             return;
         }
@@ -31,13 +40,34 @@ function Productcard({ product, handleClick }) {
         }
     };
 
+    // Reveal once on first scroll into view. The hiding class is added here
+    // rather than in the markup, so a card is visible if this never runs.
+    const cardRef = useRef(null);
+    useEffect(() => {
+        const el = cardRef.current;
+        if (!el || typeof IntersectionObserver === 'undefined') return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        el.classList.add('dd-reveal');
+        const io = new IntersectionObserver(
+            ([entry], obs) => {
+                if (!entry.isIntersecting) return;
+                el.classList.add('is-in');
+                obs.disconnect();
+            },
+            { rootMargin: '0px 0px -40px 0px' }
+        );
+        io.observe(el);
+        return () => io.disconnect();
+    }, []);
+
     const blurb = (product.description || '').length > 90
         ? `${product.description.slice(0, 90).trimEnd()}...`
         : product.description;
 
     return (
         <div className="col-12 col-sm-6 col-lg-3">
-            <article className="dd-card">
+            <article className="dd-card" ref={cardRef}>
                 <div className="dd-card-media">
                     <button
                         type="button"
@@ -49,7 +79,7 @@ function Productcard({ product, handleClick }) {
                             src={product.files?.[0]}
                             alt={product.name}
                             loading="lazy"
-                            onError={(e) => { e.currentTarget.src = 'https://placehold.co/600x450/f3f4f6/6b737d/png?text=No+image'; }}
+                            onError={(e) => { e.currentTarget.src = 'https://placehold.co/600x450/f3f1ea/6f6d64/png?text=No+image'; }}
                         />
                     </button>
 
@@ -106,4 +136,6 @@ function Productcard({ product, handleClick }) {
     );
 }
 
-export default Productcard;
+// Memoised: with a memoised context value above it, a card now only
+// re-renders when its own product or liked state actually changes.
+export default memo(Productcard);

@@ -2,91 +2,69 @@ import React, { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../css/cart.css';
 import axios from 'axios';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '../components/CheckoutForm';
+import {
+  fetchCart,
+  incrementItem,
+  decrementItem,
+  removeItem as removeCartItem,
+  cartCleared,
+  selectCartItems,
+  selectCartStatus,
+  selectCartSubtotal,
+} from '../../store/cartSlice';
+import { selectAuth } from '../../store/authSlice';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 const API_URL = import.meta.env.VITE_API_URL;
 
 const Cart = () => {
-  const [cartItems, setCartItems] = useState([]);
   const [address, setAddress] = useState('');
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(true);
   const [checkingOut, setCheckingOut] = useState(false);
   const [clientSecret, setClientSecret] = useState('');
   const [showPayment, setShowPayment] = useState(false);
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
+  const dispatch = useDispatch();
+
+  // Items live in the store, so the navbar badge and this page cannot
+  // disagree. This page used to hold its own copy in useState.
+  const cartItems = useSelector(selectCartItems);
+  const cartStatus = useSelector(selectCartStatus);
+  const subtotal = useSelector(selectCartSubtotal);
+  const { token, email, isAuthenticated } = useSelector(selectAuth);
+  const loading = cartStatus === 'loading';
 
   useEffect(() => {
-    const userEmail = localStorage.getItem('email');
-    setEmail(userEmail);
-    if (userEmail) {
-      fetchCartItems(userEmail);
-    } else {
-      setLoading(false);
-    }
-  }, []);
-
-  const fetchCartItems = async (email) => {
-    try {
-      setLoading(true);
-      const response = await axios.get(
-        `${API_URL}/api/product/allcart?email=${email}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setCartItems(response.data.items || []);
-    } catch (error) {
-      console.error('Error fetching cart items:', error);
-      toast.error('Error loading cart');
-      setCartItems([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    if (isAuthenticated) dispatch(fetchCart());
+  }, [isAuthenticated, dispatch]);
 
   const removeItem = async (itemId) => {
     try {
-      const response = await axios.delete(
-        `${API_URL}/api/product/remove/${itemId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setCartItems(response.data.cart.items);
+      await dispatch(removeCartItem(itemId)).unwrap();
       toast.success('Item removed from cart');
-    } catch (error) {
-      console.error('Error removing item:', error);
-      toast.error('Failed to remove item');
+    } catch (message) {
+      toast.error(message || 'Failed to remove item');
     }
   };
 
   const increment = async (itemId) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/api/product/increment/${itemId}`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setCartItems(response.data.cart.items);
-    } catch (error) {
-      toast.error('Failed to update quantity');
+      await dispatch(incrementItem(itemId)).unwrap();
+    } catch (message) {
+      toast.error(message || 'Failed to update quantity');
     }
   };
 
   const decrement = async (itemId) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/api/product/decrement/${itemId}`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setCartItems(response.data.cart.items);
-    } catch (error) {
-      toast.error('Failed to update quantity');
+      await dispatch(decrementItem(itemId)).unwrap();
+    } catch (message) {
+      toast.error(message || 'Failed to update quantity');
     }
   };
 
@@ -96,9 +74,7 @@ const Cart = () => {
       return;
     }
 
-    const totalAmount = cartItems.reduce(
-      (acc, item) => acc + item.price * item.quantity, 0
-    );
+    const totalAmount = subtotal;
 
     try {
       setCheckingOut(true);
@@ -117,9 +93,7 @@ const Cart = () => {
   };
 
   const handlePaymentSuccess = async () => {
-    const totalAmount = cartItems.reduce(
-      (acc, item) => acc + item.price * item.quantity, 0
-    );
+    const totalAmount = subtotal;
 
     try {
       await axios.post(
@@ -134,7 +108,7 @@ const Cart = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       toast.success('Order placed successfully!');
-      setCartItems([]);
+      dispatch(cartCleared());
       setAddress('');
       setShowPayment(false);
       setTimeout(() => navigate('/userdash/trackorder'), 1500);
@@ -142,10 +116,6 @@ const Cart = () => {
       toast.error('Order placement failed. Contact support.');
     }
   };
-
-  const subtotal = cartItems.reduce(
-    (acc, item) => acc + item.price * item.quantity, 0
-  );
 
   if (loading) {
     return (
@@ -160,7 +130,6 @@ const Cart = () => {
   if (cartItems.length === 0) {
     return (
       <div className="d-flex flex-column justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
-        <ToastContainer />
         <i className="bi bi-cart-x" style={{ fontSize: '4rem', color: '#ccc' }}></i>
         <h3 className="mt-3 text-muted">Your cart is empty</h3>
         <button
@@ -175,7 +144,6 @@ const Cart = () => {
 
   return (
     <div className="App">
-      <ToastContainer />
       <div className="cart">
         <h1>Shopping Cart</h1>
         <table className="table">

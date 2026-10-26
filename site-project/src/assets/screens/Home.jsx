@@ -71,7 +71,7 @@ function Home() {
                       src={banner.file}
                       className="d-block w-100"
                       alt={banner.name || 'Banner'}
-                      onError={(e) => { e.currentTarget.src = 'https://placehold.co/1200x400/15181c/ffc300/png?text=DeviceDepot'; }}
+                      onError={(e) => { e.currentTarget.src = 'https://placehold.co/1200x400/141412/f5ce2e/png?text=DeviceDepot'; }}
                     />
                   </div>
                 ))}

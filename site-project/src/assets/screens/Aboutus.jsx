@@ -23,33 +23,30 @@ function Aboutus() {
                     <div className='col-12 col-md-4'>
                         <div
                             id="carouselAbout"
-                            className="carousel slide"
+                            className="carousel slide about_carousel"
                             data-bs-ride="carousel"
                         >
                             <div className="carousel-inner">
                                 <div className="carousel-item active" data-bs-interval="3000">
                                     <img
-                                        src="./delivery.webp"
-                                        className="d-block w-100"
-                                        style={{ minHeight: '300px', objectFit: 'cover' }}
+                                        src="/about/delivery.svg"
+                                        className="d-block w-100 about_slide"
                                         alt="Fast Delivery"
                                         onError={(e) => { e.target.src = 'https://placehold.co/400x300?text=Device+Depot' }}
                                     />
                                 </div>
                                 <div className="carousel-item" data-bs-interval="3000">
                                     <img
-                                        src="./d2.webp"
-                                        className="d-block w-100"
-                                        style={{ minHeight: '300px', objectFit: 'cover' }}
+                                        src="/about/quality.svg"
+                                        className="d-block w-100 about_slide"
                                         alt="Quality Products"
                                         onError={(e) => { e.target.src = 'https://placehold.co/400x300?text=Device+Depot' }}
                                     />
                                 </div>
                                 <div className="carousel-item" data-bs-interval="3000">
                                     <img
-                                        src="./d3.webp"
-                                        className="d-block w-100"
-                                        style={{ minHeight: '300px', objectFit: 'cover' }}
+                                        src="/about/secure.svg"
+                                        className="d-block w-100 about_slide"
                                         alt="Secure Shopping"
                                         onError={(e) => { e.target.src = 'https://placehold.co/400x300?text=Device+Depot' }}
                                     />

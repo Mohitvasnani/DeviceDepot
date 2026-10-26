@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 
 export const ProductsContext = createContext();
@@ -18,7 +18,7 @@ export const ProductsProvider = ({ children }) => {
         if (userEmail) fetchLikedProducts();
     }, []);
 
-    const fetchProducts = async () => {
+    const fetchProducts = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
@@ -30,9 +30,9 @@ export const ProductsProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    const fetchLikedProducts = async () => {
+    const fetchLikedProducts = useCallback(async () => {
         const userEmail = localStorage.getItem('email');
         if (!userEmail) return;
         try {
@@ -47,9 +47,16 @@ export const ProductsProvider = ({ children }) => {
             setError(error.message);
             console.error('Error fetching liked products:', error);
         }
-    };
+    }, []);
 
-    const addToCart = async (productId) => {
+    const toggleLike = useCallback((productId) => {
+        setLikedProducts(prevState => ({
+            ...prevState,
+            [productId]: !prevState[productId],
+        }));
+    }, []);
+
+    const addToCart = useCallback(async (productId) => {
         const userEmail = localStorage.getItem('email');
         if (!userEmail) {
             console.error('User email not found in local storage.');
@@ -68,9 +75,9 @@ export const ProductsProvider = ({ children }) => {
         } catch (err) {
             console.error('Error adding to cart:', err);
         }
-    };
+    }, []);
 
-    const addLike = async (productId) => {
+    const addLike = useCallback(async (productId) => {
         const userEmail = localStorage.getItem('email');
         if (!userEmail) {
             console.error('Email not saved');
@@ -90,9 +97,9 @@ export const ProductsProvider = ({ children }) => {
         } catch (error) {
             console.error('Error adding to liked:', error);
         }
-    };
+    }, [toggleLike]);
 
-    const removeLike = async (productId) => {
+    const removeLike = useCallback(async (productId) => {
         const userEmail = localStorage.getItem('email');
         if (!userEmail) {
             console.error('Email not saved');
@@ -118,17 +125,15 @@ export const ProductsProvider = ({ children }) => {
         } catch (error) {
             console.error('Error removing like:', error);
         }
-    };
+    }, []);
 
-    const toggleLike = (productId) => {
-        setLikedProducts(prevState => ({
-            ...prevState,
-            [productId]: !prevState[productId],
-        }));
-    };
 
-    return (
-        <ProductsContext.Provider value={{
+    // A fresh object literal here gives every consumer a new reference on
+    // every render, so all 36 product cards re-rendered whenever anything in
+    // this provider changed. Memoising it is the single biggest win on this
+    // page.
+    const value = useMemo(
+        () => ({
             products,
             loading,
             error,
@@ -138,8 +143,14 @@ export const ProductsProvider = ({ children }) => {
             removeLike,
             addToCart,
             addLike,
-            fetchLikedProducts
-        }}>
+            fetchLikedProducts,
+        }),
+        [products, loading, error, likedProducts, likedItems,
+         fetchProducts, removeLike, addToCart, addLike, fetchLikedProducts]
+    );
+
+    return (
+        <ProductsContext.Provider value={value}>
             {children}
         </ProductsContext.Provider>
     );

@@ -1,191 +1,374 @@
-.container-loginsignup{
-    background-color: #fff;
-    border-radius: 30px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
-    position: relative;
-    overflow: hidden;
-    width: 768px;
-    max-width: 100%;
-    min-height: 480px;
+/* Sign in / create account.
+
+   The sliding panel is kept for desktop. Below 768px it is switched off
+   entirely and the page becomes one form at a time, because the panel is
+   built from absolutely positioned 50% halves and cannot fit a phone. */
+
+.auth_page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 160px);
+  padding: var(--dd-6) var(--dd-4);
+  background: var(--dd-concrete);
 }
 
-.container-loginsignup p{
-    font-size: 14px;
-    line-height: 20px;
-    letter-spacing: 0.3px;
-    margin: 20px 0;
+.container-loginsignup {
+  background-color: var(--dd-surface);
+  border: 1px solid var(--dd-line-soft);
+  border-radius: var(--dd-radius-lg);
+  box-shadow: var(--dd-shadow-up);
+  position: relative;
+  overflow: hidden;
+  width: 820px;
+  max-width: 100%;
+  min-height: 560px;
 }
 
-.container-loginsignup span{
-    font-size: 12px;
+/* --- form shell --------------------------------------------------------- */
+
+.container-loginsignup form {
+  background-color: var(--dd-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  padding: var(--dd-6);
+  height: 100%;
+  gap: 0;
 }
 
-.container-loginsignup a{
-    color: #333;
-    font-size: 13px;
-    text-decoration: none;
-    margin: 15px 0 10px;
+.container-loginsignup h1 {
+  font-size: var(--dd-text-xl);
+  margin-bottom: var(--dd-1);
+  text-align: left;
 }
 
-.container-loginsignup button{
-    background-color: #222831;
-    color: #fff;
-    font-size: 12px;
-    padding: 10px 45px;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    margin-top: 10px;
-    cursor: pointer;
+.auth_lede {
+  font-size: var(--dd-text-sm);
+  color: var(--dd-ink-faint);
+  margin: 0 0 var(--dd-4);
 }
 
-.container-loginsignup button.hidden{
-    background-color: transparent;
-    border-color: #fff;
+/* --- fields ------------------------------------------------------------- */
+
+.auth_field {
+  display: block;
+  margin-bottom: var(--dd-3);
+  text-align: left;
 }
 
-.container-loginsignup form{
-    background-color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    padding: 0 40px;
-    height: 100%;
+.auth_field > span {
+  display: block;
+  font-size: var(--dd-text-xs);
+  font-weight: 600;
+  color: var(--dd-ink-soft);
+  margin-bottom: var(--dd-1);
 }
 
-.container-loginsignup input{
-    background-color: #eee;
-    border: none;
-    margin: 8px 0;
-    padding: 10px 15px;
-    font-size: 13px;
-    border-radius: 8px;
+.auth_field > span small {
+  font-weight: 500;
+  color: var(--dd-ink-faint);
+  text-transform: none;
+}
+
+.container-loginsignup input {
+  background-color: var(--dd-surface);
+  border: 1px solid var(--dd-line);
+  margin: 0;
+  padding: var(--dd-2) var(--dd-3);
+  font-family: var(--dd-font);
+  font-size: var(--dd-text-base);
+  color: var(--dd-ink);
+  border-radius: var(--dd-radius);
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.container-loginsignup input:focus {
+  border-color: var(--dd-ink);
+  box-shadow: 0 0 0 3px var(--dd-signal-faint);
+}
+
+.container-loginsignup input[aria-invalid='true'] {
+  border-color: var(--dd-alert);
+}
+
+.auth_field em {
+  display: block;
+  font-style: normal;
+  font-size: var(--dd-text-xs);
+  color: var(--dd-alert);
+  margin-top: var(--dd-1);
+}
+
+.auth_hint {
+  display: block;
+  font-size: var(--dd-text-xs);
+  color: var(--dd-ink-faint);
+  margin-top: var(--dd-1);
+}
+
+/* show / hide password */
+
+.auth_passwrap {
+  position: relative;
+  display: block;
+}
+
+.auth_passwrap input { padding-right: 2.75rem; }
+
+.auth_peek {
+  position: absolute;
+  top: 50%;
+  right: 2px;
+  transform: translateY(-50%);
+  width: 2.25rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  color: var(--dd-ink-faint);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  text-transform: none;
+  letter-spacing: normal;
+  border-radius: var(--dd-radius);
+}
+
+.auth_peek:hover { color: var(--dd-ink); }
+
+/* --- form-level error --------------------------------------------------- */
+
+.auth_formerror {
+  font-size: var(--dd-text-sm);
+  color: var(--dd-alert);
+  background: #fdeceC;
+  border: 1px solid #f5c6c6;
+  border-radius: var(--dd-radius);
+  padding: var(--dd-2) var(--dd-3);
+  margin: 0 0 var(--dd-4);
+}
+
+/* --- buttons ------------------------------------------------------------ */
+
+.container-loginsignup button[type='submit'] {
+  background-color: var(--dd-signal);
+  color: var(--dd-ink);
+  font-family: var(--dd-font);
+  font-size: var(--dd-text-base);
+  font-weight: 600;
+  padding: var(--dd-3) var(--dd-5);
+  border: 1px solid var(--dd-signal);
+  border-radius: var(--dd-radius);
+  letter-spacing: 0;
+  text-transform: none;
+  margin-top: var(--dd-2);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.container-loginsignup button[type='submit']:hover:not(:disabled) {
+  background-color: var(--dd-signal-deep);
+  border-color: var(--dd-signal-deep);
+}
+
+.container-loginsignup button[type='submit']:disabled {
+  background-color: var(--dd-line);
+  border-color: var(--dd-line);
+  color: var(--dd-ink-faint);
+  cursor: progress;
+}
+
+.auth_forgot {
+  display: inline-block;
+  color: var(--dd-ink-soft);
+  font-size: var(--dd-text-sm);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  margin: var(--dd-1) 0 var(--dd-2);
+  align-self: flex-start;
+}
+
+.auth_forgot:hover { color: var(--dd-ink); }
+
+/* In-form switch. Hidden on desktop, where the sliding panel does this job. */
+.auth_switch {
+  display: none;
+  font-size: var(--dd-text-sm);
+  color: var(--dd-ink-soft);
+  margin: var(--dd-4) 0 0;
+  text-align: center;
+}
+
+.auth_switch button {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--dd-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-transform: none;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+
+/* --- the slide ---------------------------------------------------------- */
+
+.form-container {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  transition: all 0.6s ease-in-out;
+}
+
+.sign-in { left: 0; width: 50%; z-index: 2; }
+
+.container-loginsignup.active .sign-in { transform: translateX(100%); }
+
+.sign-up { left: 0; width: 50%; opacity: 0; z-index: 1; }
+
+.container-loginsignup.active .sign-up {
+  transform: translateX(100%);
+  opacity: 1;
+  z-index: 5;
+  animation: move 0.6s;
+}
+
+@keyframes move {
+  0%, 49.99% { opacity: 0; z-index: 1; }
+  50%, 100%  { opacity: 1; z-index: 5; }
+}
+
+.toggle-container {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  transition: all 0.6s ease-in-out;
+  z-index: 2;
+}
+
+.container-loginsignup.active .toggle-container { transform: translateX(-100%); }
+
+.toggle {
+  background: var(--dd-ink);
+  color: var(--dd-surface);
+  position: relative;
+  left: -100%;
+  height: 100%;
+  width: 200%;
+  transform: translateX(0);
+  transition: all 0.6s ease-in-out;
+}
+
+.container-loginsignup.active .toggle { transform: translateX(50%); }
+
+.toggle-panel {
+  position: absolute;
+  width: 50%;
+  height: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  flex-direction: column;
+  padding: var(--dd-6);
+  text-align: left;
+  top: 0;
+  transform: translateX(0);
+  transition: all 0.6s ease-in-out;
+}
+
+/* The global heading colour is ink, and this panel is ink. Reverse it out
+   or the headings vanish into the background. */
+.toggle-panel h2 {
+  color: var(--dd-surface);
+  font-size: var(--dd-text-lg);
+  margin-bottom: var(--dd-2);
+}
+
+.toggle-panel p {
+  color: #bdb9ad;
+  font-size: var(--dd-text-sm);
+  margin-bottom: var(--dd-5);
+  max-width: 28ch;
+}
+
+.container-loginsignup button.hidden {
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: var(--dd-surface);
+  font-family: var(--dd-font);
+  font-size: var(--dd-text-sm);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  padding: var(--dd-2) var(--dd-5);
+  border-radius: var(--dd-radius);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.container-loginsignup button.hidden:hover {
+  background-color: var(--dd-signal);
+  border-color: var(--dd-signal);
+  color: var(--dd-ink);
+}
+
+.toggle-left { transform: translateX(-200%); }
+.container-loginsignup.active .toggle-left { transform: translateX(0); }
+
+.toggle-right { right: 0; transform: translateX(0); }
+.container-loginsignup.active .toggle-right { transform: translateX(200%); }
+
+/* --- below 768px: no slide ----------------------------------------------
+   The panel is built from absolutely positioned halves. On a phone there is
+   no room for two halves, so it is turned off and one form is shown at a
+   time, switched by the in-form link. */
+
+@media (max-width: 767.98px) {
+  .auth_page { padding: var(--dd-4) var(--dd-3); align-items: flex-start; }
+
+  .container-loginsignup {
     width: 100%;
-    outline: none;
+    min-height: 0;
+    border-radius: var(--dd-radius);
+  }
+
+  .toggle-container { display: none; }
+
+  .form-container {
+    position: static;
+    width: 100%;
+    height: auto;
+    transform: none !important;
+    animation: none !important;
+    transition: none;
+  }
+
+  .sign-up { display: none; opacity: 1; }
+  .sign-in { display: block; }
+
+  .container-loginsignup.active .sign-up { display: block; opacity: 1; }
+  .container-loginsignup.active .sign-in { display: none; }
+
+  .container-loginsignup form { padding: var(--dd-5) var(--dd-4); }
+
+  .auth_switch { display: block; }
 }
 
-.form-container{
-    position: absolute;
-    top: 0;
-    height: 100%;
-    transition: all 0.6s ease-in-out;
-}
-
-.sign-in{
-    left: 0;
-    width: 50%;
-    z-index: 2;
-}
-
-.container-loginsignup.active .sign-in{
-    transform: translateX(100%);
-}
-
-.sign-up{
-    left: 0;
-    width: 50%;
-    opacity: 0;
-    z-index: 1;
-}
-
-.container-loginsignup.active .sign-up{
-    transform: translateX(100%);
-    opacity: 1;
-    z-index: 5;
-    animation: move 0.6s;
-}
-
-@keyframes move{
-    0%, 49.99%{
-        opacity: 0;
-        z-index: 1;
-    }
-    50%, 100%{
-        opacity: 1;
-        z-index: 5;
-    }
-}
-
-.social-icons{
-    margin: 20px 0;
-}
-
-.social-icons a{
-    border: 1px solid #ccc;
-    border-radius: 20%;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    margin: 0 3px;
-    width: 40px;
-    height: 40px;
-}
-
-.toggle-container{
-    position: absolute;
-    top: 0;
-    left: 50%;
-    width: 50%;
-    height: 100%;
-    overflow: hidden;
-    transition: all 0.6s ease-in-out;
-    border-radius: 150px 0 0 100px;
-    z-index: 2;
-}
-
-.container-loginsignup.active .toggle-container{
-    transform: translateX(-100%);
-    border-radius: 0 150px 100px 0;
-}
-
-.toggle{
-    background-color: #222831;
-    height: 100%;
-    background: linear-gradient(to right, #31363F, #222831);
-    color: #fff;
-    position: relative;
-    left: -100%;
-    height: 100%;
-    width: 200%;
-    transform: translateX(0);
-    transition: all 0.6s ease-in-out;
-}
-
-.container-loginsignup.active .toggle{
-    transform: translateX(50%);
-}
-
-.toggle-panel{
-    position: absolute;
-    width: 50%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    padding: 0 30px;
-    text-align: center;
-    top: 0;
-    transform: translateX(0);
-    transition: all 0.6s ease-in-out;
-}
-
-.toggle-left{
-    transform: translateX(-200%);
-}
-
-.container-loginsignup.active .toggle-left{
-    transform: translateX(0);
-}
-
-.toggle-right{
-    right: 0;
-    transform: translateX(0);
-}
-
-.container-loginsignup.active .toggle-right{
-    transform: translateX(200%);
+@media (prefers-reduced-motion: reduce) {
+  .form-container,
+  .toggle,
+  .toggle-container,
+  .toggle-panel { transition: none; animation: none; }
 }

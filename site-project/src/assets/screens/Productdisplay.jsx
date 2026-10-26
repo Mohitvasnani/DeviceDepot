@@ -5,7 +5,7 @@ import '../css/productdisplay.css';
 import { toast } from 'react-toastify';
 
 const API_URL = import.meta.env.VITE_API_URL;
-const FALLBACK = 'https://placehold.co/600x600/f3f4f6/6b737d/png?text=No+image';
+const FALLBACK = 'https://placehold.co/600x600/f3f1ea/6f6d64/png?text=No+image';
 
 function Productdisplay() {
   const [liked, setLiked] = useState(false);

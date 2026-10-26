@@ -172,10 +172,12 @@ const viewCarts = async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Find the cart for the user
+        // Find the cart for the user. A user who has never added anything has
+        // no cart document, which is an empty cart, not an error. Returning
+        // 404 here logged a console error on every fresh sign-in.
         const cart = await cartModel.findOne({ userId: user._id }).populate('items.productId');
         if (!cart) {
-            return res.status(404).json({ error: 'Cart not found' });
+            return res.json({ userId: user._id, items: [] });
         }
 
         res.json(cart);

@@ -1,16 +1,16 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
-const connection = ()=>{
-    try {
-        mongoose.connect(process.env.MONGODB_URL)
-        .then((res)=>{
+const connection = () => {
+    return mongoose.connect(process.env.MONGODB_URL)
+        .then(() => {
             console.log('db connected');
-        }).catch((err)=>{
-            console.log(`db not connected`, err);
         })
-    } catch (err) {
-        console.log(`db not connected`, err);
-    }
-}
-connection()
-module.exports = connection
+        .catch((err) => {
+            console.log('db not connected', err);
+        });
+};
+
+// Do not call connection() here. index.js calls it on boot, and invoking it
+// at module load as well opened two connections, which made every error
+// appear twice and printed a success and a failure for the same database.
+module.exports = connection;

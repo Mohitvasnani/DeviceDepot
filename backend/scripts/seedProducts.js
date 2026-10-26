@@ -5,12 +5,22 @@
  *   node scripts/seedProducts.js --wipe             delete all products first
  *   node scripts/seedProducts.js --admin            also create an admin user
  *   node scripts/seedProducts.js --wipe --admin     both (use this on a fresh cluster)
+ *   node scripts/seedProducts.js --placeholders     ignore local images, use placehold.co
  *
  * Reads MONGODB_URL from backend/.env.
  *
- * Images: placeholder URLs by default, so the catalogue renders immediately on a
- * fresh cluster. Replace them with real Cloudinary URLs by re-uploading through
- * the admin "Add Products" screen, or by editing IMAGE_OVERRIDES below.
+ * IMAGES
+ * Each product points at site-project/public/products/<slug>-1.svg and so on,
+ * served by Vite in development and by Vercel in production. `images` is how
+ * many files exist for that product. If a file is missing the frontend's
+ * onError handler falls back to a placeholder, so a partly filled folder
+ * still renders.
+ *
+ * CATALOGUE
+ * Aerlite, Kestrix and Halden are invented brands, and so is every product.
+ * The artwork in public/products/ is drawn to match, by
+ * site-project/scripts/make-product-art.mjs. Nothing here is a real device,
+ * which keeps the names and the pictures telling the same story.
  */
 
 const path = require('path');
@@ -24,6 +34,7 @@ const User = require('../models/userModels');
 
 const WIPE = process.argv.includes('--wipe');
 const MAKE_ADMIN = process.argv.includes('--admin');
+const FORCE_PLACEHOLDERS = process.argv.includes('--placeholders');
 
 const ADMIN = {
   name: process.env.SEED_ADMIN_NAME || 'Admin',
@@ -32,236 +43,526 @@ const ADMIN = {
   password: process.env.SEED_ADMIN_PASSWORD || 'ChangeMe123!',
 };
 
-// Map a product name to one or more real image URLs to override the placeholder.
-// e.g. 'MacBook Air M3': ['https://res.cloudinary.com/<cloud>/image/upload/v1/devicedepot/mba-1.jpg']
-const IMAGE_OVERRIDES = {};
+const placeholder = (name, i) =>
+  `https://placehold.co/800x600/f3f4f6/6b737d/png?text=${encodeURIComponent(name)}+${i}`;
 
-const placeholder = (name, i = 1) =>
-  `https://placehold.co/800x800/f1f3f5/212529/png?text=${encodeURIComponent(name)}+${i}`;
-
-const images = (name, count = 2) =>
-  IMAGE_OVERRIDES[name] || Array.from({ length: count }, (_, i) => placeholder(name, i + 1));
+const filesFor = (p) =>
+  FORCE_PLACEHOLDERS
+    ? Array.from({ length: 2 }, (_, i) => placeholder(p.name, i + 1))
+    : Array.from({ length: p.images || 1 }, (_, i) => `/products/${p.slug}-${i + 1}.svg`);
 
 // categories must be exactly 'laptop', 'mobile' or 'accessories'.
 // Anything else is invisible on the category pages.
 const products = [
+
+  // ------------------------------------------------- Aerlite, laptops
   {
-    name: 'MacBook Air M3 13"',
+    slug: 'aerlite-slate-13',
+    name: 'Aerlite Slate 13',
     categories: 'laptop',
-    price: 1099,
+    price: 999,
     rating: 5,
     quantity: 12,
+    images: 1,
     description:
-      'Apple M3 chip with an 8-core CPU and 10-core GPU, 16GB unified memory and a 512GB SSD. Fanless, 1.24kg, and genuinely all-day battery.',
-    feature1: 'Apple M3, 8-core CPU / 10-core GPU',
-    feature2: '13.6" Liquid Retina, 500 nits',
-    feature3: 'Up to 18 hours battery',
+      'A fanless ultraportable at 1.2kg that still runs a full development stack. Silent under load, and the battery genuinely lasts a working day.',
+    feature1: '8-core processor, 16GB memory',
+    feature2: '13.3" 2.5K matte, 500 nits',
+    feature3: 'Fanless, 1.2kg, 18h battery',
   },
   {
-    name: 'Dell XPS 14',
+    slug: 'aerlite-slate-15',
+    name: 'Aerlite Slate 15',
     categories: 'laptop',
-    price: 1649,
+    price: 1149,
     rating: 4,
-    quantity: 7,
+    quantity: 9,
+    images: 1,
     description:
-      'Core Ultra 7 with RTX 4050 graphics in a 1.7kg CNC aluminium chassis. Aimed at developers who also want a usable GPU.',
-    feature1: 'Intel Core Ultra 7 155H',
-    feature2: 'RTX 4050 6GB, 32GB LPDDR5X',
-    feature3: '14.5" 3K OLED touch, 120Hz',
+      'The Slate with room to work. Same silent design and a larger panel, with a second memory slot for people who keep too many windows open.',
+    feature1: '8-core processor, 32GB memory',
+    feature2: '15.3" 2.8K matte, 500 nits',
+    feature3: 'Upgradeable memory and storage',
   },
   {
-    name: 'ThinkPad X1 Carbon Gen 12',
+    slug: 'aerlite-slate-mini',
+    name: 'Aerlite Slate Mini',
     categories: 'laptop',
-    price: 1799,
-    rating: 5,
-    quantity: 5,
+    price: 849,
+    rating: 4,
+    quantity: 15,
+    images: 1,
     description:
-      'The business workhorse. 1.09kg carbon fibre, the best keyboard on any laptop, and Linux support that actually works out of the box.',
-    feature1: 'Core Ultra 7, 32GB RAM',
-    feature2: '14" 2.8K OLED, anti-glare',
-    feature3: 'MIL-STD-810H tested, 1.09kg',
+      'The smallest machine Aerlite makes. Under a kilogram, fits a small bag, and still has a full-size keyboard rather than a cramped one.',
+    feature1: '6-core processor, 16GB memory',
+    feature2: '12.4" 2K matte',
+    feature3: '0.98kg, 16h battery',
   },
   {
-    name: 'ASUS ROG Zephyrus G16',
+    slug: 'aerlite-carbon-14',
+    name: 'Aerlite Carbon 14',
+    categories: 'laptop',
+    price: 1599,
+    rating: 5,
+    quantity: 6,
+    images: 1,
+    description:
+      'Carbon fibre lid, a keyboard with real travel, and a chassis tested to military shock standards. Built for opening on a train every day.',
+    feature1: '12-core processor, 32GB memory',
+    feature2: '14" 2.8K OLED, anti-glare',
+    feature3: 'Carbon fibre, 1.09kg',
+  },
+  {
+    slug: 'aerlite-studio-16',
+    name: 'Aerlite Studio 16',
     categories: 'laptop',
     price: 2099,
+    rating: 5,
+    quantity: 5,
+    images: 1,
+    description:
+      'A colour-accurate panel and enough sustained power to render without throttling. Aimed at editors rather than gamers, though it handles both.',
+    feature1: '12-core processor, 64GB memory',
+    feature2: '16" 4K OLED, 100% DCI-P3',
+    feature3: 'Colour calibrated at the factory',
+  },
+  {
+    slug: 'aerlite-forge-16',
+    name: 'Aerlite Forge 16',
+    categories: 'laptop',
+    price: 1899,
     rating: 4,
     quantity: 4,
+    images: 1,
     description:
-      'RTX 4070 gaming performance in a 1.85kg body you can carry to a lecture. 240Hz OLED panel with full DCI-P3 coverage.',
-    feature1: 'RTX 4070 8GB, 165W TGP',
+      'Desktop-class graphics in something you can still carry. The 240Hz OLED covers the full DCI-P3 range, so it grades as happily as it games.',
+    feature1: 'Discrete 8GB graphics, 140W',
     feature2: '16" 2.5K OLED, 240Hz',
     feature3: '90Wh battery, USB-C charging',
   },
   {
-    name: 'HP Pavilion 15',
+    slug: 'aerlite-forge-18',
+    name: 'Aerlite Forge 18',
+    categories: 'laptop',
+    price: 2399,
+    rating: 4,
+    quantity: 3,
+    images: 1,
+    description:
+      'The big one. A vapour chamber and twin fans keep the graphics at full power indefinitely, at the cost of any pretence of portability.',
+    feature1: 'Discrete 12GB graphics, 175W',
+    feature2: '18" 2.5K Mini LED, 240Hz',
+    feature3: 'Vapour chamber cooling, 3.1kg',
+  },
+  {
+    slug: 'aerlite-field-15',
+    name: 'Aerlite Field 15',
     categories: 'laptop',
     price: 549,
     rating: 3,
-    quantity: 20,
+    quantity: 22,
+    images: 1,
     description:
-      'Budget all-rounder for coursework, browsing and light dev work. Ryzen 5, 16GB RAM and a 512GB SSD at an entry-level price.',
-    feature1: 'AMD Ryzen 5 7530U',
-    feature2: '16GB DDR4, 512GB NVMe',
-    feature3: '15.6" FHD IPS, 250 nits',
+      'The sensible one. Coursework, browsing and light development without paying flagship money, in a case that survives being thrown in a bag.',
+    feature1: '6-core processor, 16GB memory',
+    feature2: '15.6" FHD IPS, 250 nits',
+    feature3: '512GB SSD, spill-resistant',
   },
   {
-    name: 'Framework Laptop 13',
+    slug: 'aerlite-field-14',
+    name: 'Aerlite Field 14',
+    categories: 'laptop',
+    price: 479,
+    rating: 3,
+    quantity: 26,
+    images: 1,
+    description:
+      'The cheapest machine here that is still worth owning. Slower than the rest and honest about it, but it boots fast and runs cool.',
+    feature1: '4-core processor, 8GB memory',
+    feature2: '14" FHD IPS',
+    feature3: '256GB SSD, 1.4kg',
+  },
+  {
+    slug: 'aerlite-modular-13',
+    name: 'Aerlite Modular 13',
     categories: 'laptop',
     price: 1249,
     rating: 4,
-    quantity: 6,
+    quantity: 7,
+    images: 1,
     description:
-      'Fully repairable and upgradeable. Swap the ports, replace the mainboard, change the screen. Every part has a QR code to a spare.',
-    feature1: 'Core Ultra 5, user-replaceable',
-    feature2: 'Swappable expansion cards',
-    feature3: '13.5" 3:2 display, 2256x1504',
-  },
-
-  {
-    name: 'iPhone 16 Pro',
-    categories: 'mobile',
-    price: 999,
-    rating: 5,
-    quantity: 15,
-    description:
-      'A18 Pro with a 48MP main sensor, 5x tetraprism telephoto and a titanium frame. ProMotion down to 1Hz for the always-on display.',
-    feature1: 'A18 Pro, 8GB RAM',
-    feature2: '48MP main + 5x telephoto',
-    feature3: '6.3" ProMotion, 1-120Hz',
+      'Designed to be opened. Swap the ports, replace the mainboard, change the screen. Every component is a part you can order on its own.',
+    feature1: '10-core processor, user-serviceable',
+    feature2: 'Swappable USB-C port cards',
+    feature3: '13.5" 3:2, 2256 x 1504',
   },
   {
-    name: 'Samsung Galaxy S25 Ultra',
-    categories: 'mobile',
-    price: 1249,
-    rating: 5,
-    quantity: 11,
+    slug: 'aerlite-flip-14',
+    name: 'Aerlite Flip 14',
+    categories: 'laptop',
+    price: 1099,
+    rating: 4,
+    quantity: 8,
+    images: 1,
     description:
-      '200MP sensor, built-in S Pen and seven years of OS updates. The flattest, squarest Ultra yet with a titanium frame.',
-    feature1: '200MP main, 5x periscope',
-    feature2: '6.9" QHD+ AMOLED, 120Hz',
-    feature3: 'S Pen included, 5000mAh',
+      'A convertible that folds flat into a tablet. The hinge holds any angle, and the pen clips magnetically to the side rather than rolling off the desk.',
+    feature1: '10-core processor, 16GB memory',
+    feature2: '14" 2.8K touch, 360 degree hinge',
+    feature3: 'Pen included, magnetic dock',
   },
   {
-    name: 'Google Pixel 9 Pro',
-    categories: 'mobile',
+    slug: 'aerlite-canvas-12',
+    name: 'Aerlite Canvas 12',
+    categories: 'laptop',
     price: 899,
     rating: 4,
-    quantity: 13,
+    quantity: 11,
+    images: 1,
     description:
-      'Tensor G4 and the best computational photography in the business. Seven years of updates, and clean Android with no skin.',
-    feature1: 'Tensor G4, 16GB RAM',
-    feature2: '50MP main, 48MP 5x tele',
+      'A detachable tablet with a proper keyboard cover. Light enough to read on, capable enough to answer email and edit a document on.',
+    feature1: '8-core processor, 12GB memory',
+    feature2: '12.3" 2K touch, 120Hz',
+    feature3: 'Keyboard cover included',
+  },
+
+  // ------------------------------------------------- Kestrix, phones
+  {
+    slug: 'kestrix-pulse-9',
+    name: 'Kestrix Pulse 9',
+    categories: 'mobile',
+    price: 749,
+    rating: 4,
+    quantity: 16,
+    images: 1,
+    description:
+      'The everyday flagship. A 120Hz panel that drops to 1Hz when nothing moves, seven years of updates, and a camera that forgives a shaky hand.',
+    feature1: '50MP main, 12MP ultrawide',
+    feature2: '6.3" LTPO AMOLED, 1-120Hz',
     feature3: '7 years of OS updates',
   },
   {
-    name: 'OnePlus 13',
+    slug: 'kestrix-pulse-9-pro',
+    name: 'Kestrix Pulse 9 Pro',
     categories: 'mobile',
-    price: 899,
-    rating: 4,
-    quantity: 9,
+    price: 1049,
+    rating: 5,
+    quantity: 10,
+    images: 1,
     description:
-      'Snapdragon 8 Elite with 100W wired charging that fills a 6000mAh battery in about 36 minutes. Flagship speed without flagship price.',
-    feature1: 'Snapdragon 8 Elite',
-    feature2: '6000mAh, 100W SuperVOOC',
-    feature3: '6.82" LTPO AMOLED, 120Hz',
+      'The Pulse with the telephoto. A 5x periscope lens, a titanium frame and the fastest silicon Kestrix makes, for people who use the long end.',
+    feature1: '50MP main, 5x periscope',
+    feature2: '6.8" LTPO AMOLED, 1-120Hz',
+    feature3: 'Titanium frame, 5200mAh',
   },
   {
-    name: 'Nothing Phone (3)',
+    slug: 'kestrix-pulse-8',
+    name: 'Kestrix Pulse 8',
     categories: 'mobile',
-    price: 579,
+    price: 549,
     rating: 4,
-    quantity: 14,
+    quantity: 21,
+    images: 1,
     description:
-      'Transparent back with the Glyph LED interface. Nothing OS is the most opinionated Android skin going, in a good way.',
-    feature1: 'Snapdragon 7s Gen 3',
-    feature2: 'Glyph LED interface',
+      'Last year\'s flagship at this year\'s price. Slower to charge and one camera short, but the panel and the build are unchanged.',
+    feature1: '50MP main, 12MP ultrawide',
+    feature2: '6.3" AMOLED, 120Hz',
+    feature3: '5 years of OS updates',
+  },
+  {
+    slug: 'kestrix-vista-8',
+    name: 'Kestrix Vista 8',
+    categories: 'mobile',
+    price: 849,
+    rating: 4,
+    quantity: 12,
+    images: 1,
+    description:
+      'Built around the camera. A 200MP sensor with pixel binning that holds detail in poor light, and manual controls deeper than anything at the price.',
+    feature1: '200MP main, pixel binning',
+    feature2: 'Full manual camera controls',
     feature3: '6.7" AMOLED, 120Hz',
   },
   {
-    name: 'Xiaomi Redmi Note 14 Pro',
+    slug: 'kestrix-vista-8-pro',
+    name: 'Kestrix Vista 8 Pro',
     categories: 'mobile',
-    price: 299,
-    rating: 4,
-    quantity: 25,
+    price: 1099,
+    rating: 5,
+    quantity: 7,
+    images: 1,
     description:
-      'Hard to beat under £300. 120Hz AMOLED, 5110mAh battery and a 200MP sensor, with the usual mid-range software compromises.',
-    feature1: 'Dimensity 7300 Ultra',
-    feature2: '200MP main camera',
-    feature3: '5110mAh, 45W charging',
+      'The Vista with a second sensor and a faster lens. Shoots raw to a 1TB internal drive, which is the part photographers actually care about.',
+    feature1: '200MP main, 48MP 3x telephoto',
+    feature2: '10-bit raw capture, 1TB storage',
+    feature3: '6.9" AMOLED, 120Hz',
+  },
+  {
+    slug: 'kestrix-edge-7',
+    name: 'Kestrix Edge 7',
+    categories: 'mobile',
+    price: 599,
+    rating: 4,
+    quantity: 18,
+    images: 1,
+    description:
+      'Charges from flat to full in about half an hour. A 6000mAh cell and 100W wired charging, so the battery stops being something you think about.',
+    feature1: '6000mAh, 100W wired',
+    feature2: 'Full charge in roughly 30 min',
+    feature3: '6.8" AMOLED, 120Hz',
+  },
+  {
+    slug: 'kestrix-edge-7-plus',
+    name: 'Kestrix Edge 7 Plus',
+    categories: 'mobile',
+    price: 699,
+    rating: 4,
+    quantity: 13,
+    images: 1,
+    description:
+      'The Edge with a bigger cell and wireless charging added. Two days of normal use, three if you are careful with the screen.',
+    feature1: '6800mAh, 120W wired, 50W wireless',
+    feature2: 'Two-day battery under normal use',
+    feature3: '6.9" AMOLED, 120Hz',
+  },
+  {
+    slug: 'kestrix-lumen',
+    name: 'Kestrix Lumen',
+    categories: 'mobile',
+    price: 679,
+    rating: 4,
+    quantity: 14,
+    images: 1,
+    description:
+      'The one that looks like nothing else. A translucent back, a light strip that handles notifications without waking the screen, and a deliberately plain interface.',
+    feature1: 'Translucent back panel',
+    feature2: 'Notification light strip',
+    feature3: '6.7" AMOLED, 120Hz',
+  },
+  {
+    slug: 'kestrix-lumen-lite',
+    name: 'Kestrix Lumen Lite',
+    categories: 'mobile',
+    price: 429,
+    rating: 4,
+    quantity: 20,
+    images: 1,
+    description:
+      'The Lumen design at half the price. Same translucent back and light strip, a slower chip, and a camera that is fine rather than good.',
+    feature1: 'Translucent back panel',
+    feature2: 'Notification light strip',
+    feature3: '6.6" AMOLED, 120Hz',
+  },
+  {
+    slug: 'kestrix-core-6',
+    name: 'Kestrix Core 6',
+    categories: 'mobile',
+    price: 279,
+    rating: 4,
+    quantity: 30,
+    images: 1,
+    description:
+      'Hard to argue with under £300. A 120Hz AMOLED panel and a two-day battery, with the mid-range compromises you expect and none you do not.',
+    feature1: '8-core processor, 8GB memory',
+    feature2: '5110mAh, 45W charging',
+    feature3: '6.6" AMOLED, 120Hz',
+  },
+  {
+    slug: 'kestrix-core-6-plus',
+    name: 'Kestrix Core 6 Plus',
+    categories: 'mobile',
+    price: 329,
+    rating: 4,
+    quantity: 24,
+    images: 1,
+    description:
+      'The Core with more memory and storage. The same honest, unexciting phone, with enough room to stop deleting photos every month.',
+    feature1: '8-core processor, 12GB memory',
+    feature2: '256GB storage, 45W charging',
+    feature3: '6.7" AMOLED, 120Hz',
+  },
+  {
+    slug: 'kestrix-slate-pad',
+    name: 'Kestrix Slate Pad',
+    categories: 'mobile',
+    price: 499,
+    rating: 4,
+    quantity: 10,
+    images: 1,
+    description:
+      'A tablet that does not pretend to be a laptop. Good for reading, drawing and video, with speakers that are better than they need to be.',
+    feature1: '11" 2.2K LCD, 120Hz',
+    feature2: 'Quad speakers, Dolby tuned',
+    feature3: '8000mAh, pen supported',
   },
 
+  // ------------------------------------------------- Halden, accessories
   {
-    name: 'Sony WH-1000XM6',
+    slug: 'halden-drift-anc',
+    name: 'Halden Drift ANC',
     categories: 'accessories',
-    price: 399,
+    price: 329,
     rating: 5,
-    quantity: 18,
+    quantity: 20,
+    images: 1,
     description:
-      'Still the reference for noise cancelling over-ears. Thirty hours of battery, multipoint pairing and a folding hinge back again.',
-    feature1: 'Industry-leading ANC',
+      'Over-ear noise cancelling that holds up on a long flight. Thirty hours a charge, pairs with two devices at once, and the hinge folds flat.',
+    feature1: 'Adaptive noise cancelling',
     feature2: '30h battery, 3min quick charge',
-    feature3: 'Bluetooth multipoint, LDAC',
+    feature3: 'Bluetooth multipoint, folds flat',
   },
   {
-    name: 'Keychron K2 Pro',
+    slug: 'halden-drift-studio',
+    name: 'Halden Drift Studio',
+    categories: 'accessories',
+    price: 249,
+    rating: 4,
+    quantity: 16,
+    images: 1,
+    description:
+      'Open-back wired headphones for mixing, not commuting. No noise cancelling, no battery, and a soundstage the sealed pair cannot match.',
+    feature1: 'Open-back, 250 ohm',
+    feature2: 'Wired 3.5mm and 6.35mm',
+    feature3: 'Replaceable pads and cable',
+  },
+  {
+    slug: 'halden-micro-buds',
+    name: 'Halden Micro Buds',
+    categories: 'accessories',
+    price: 149,
+    rating: 4,
+    quantity: 28,
+    images: 1,
+    description:
+      'Earbuds small enough to forget you are wearing. Eight hours in the bud, thirty in the case, and a fit test that tells you if the seal is wrong.',
+    feature1: '8h buds, 30h with case',
+    feature2: 'Adaptive noise cancelling',
+    feature3: 'IPX4, wireless charging case',
+  },
+  {
+    slug: 'halden-tactile-75',
+    name: 'Halden Tactile 75',
     categories: 'accessories',
     price: 109,
     rating: 5,
-    quantity: 22,
+    quantity: 24,
+    images: 1,
     description:
-      '75% hot-swappable mechanical keyboard, fully QMK/VIA programmable. Gasket mount, aluminium case, wired or Bluetooth.',
-    feature1: 'Hot-swappable, QMK/VIA',
+      'A 75% mechanical board with hot-swappable switches and a gasket mount, so you can change how it feels without soldering anything.',
+    feature1: 'Hot-swappable switches',
     feature2: '75% layout, gasket mount',
-    feature3: 'Bluetooth 5.1 + USB-C',
+    feature3: 'Bluetooth and USB-C',
   },
   {
-    name: 'Logitech MX Master 3S',
+    slug: 'halden-tactile-65',
+    name: 'Halden Tactile 65',
     categories: 'accessories',
-    price: 99,
-    rating: 5,
-    quantity: 30,
+    price: 89,
+    rating: 4,
+    quantity: 27,
+    images: 1,
     description:
-      'The mouse most developers end up with. MagSpeed scroll wheel, 8K DPI, quiet clicks and three device channels.',
-    feature1: '8000 DPI, any-surface tracking',
-    feature2: 'MagSpeed electromagnetic scroll',
+      'The Tactile with the function row removed. Smaller desk footprint, same switches and the same gasket mount.',
+    feature1: 'Hot-swappable switches',
+    feature2: '65% layout, gasket mount',
+    feature3: 'Bluetooth and USB-C',
+  },
+  {
+    slug: 'halden-glide-pro',
+    name: 'Halden Glide Pro',
+    categories: 'accessories',
+    price: 89,
+    rating: 5,
+    quantity: 32,
+    images: 1,
+    description:
+      'A mouse shaped for eight-hour days. Near-silent clicks, a wheel that free-spins through long files, and three devices on a button.',
+    feature1: '8000 DPI, tracks on glass',
+    feature2: 'Free-spin scroll wheel',
     feature3: '70 days per charge, 3 devices',
   },
   {
-    name: 'Anker 737 Power Bank',
+    slug: 'halden-reserve-24',
+    name: 'Halden Reserve 24',
     categories: 'accessories',
-    price: 129,
+    price: 109,
     rating: 4,
     quantity: 26,
+    images: 1,
     description:
-      '24,000mAh with 140W output, enough to fast-charge a MacBook Pro. Smart display shows exact wattage in and out.',
-    feature1: '24,000mAh, 140W max output',
-    feature2: 'Charges a 16" MacBook Pro',
-    feature3: 'Digital wattage display',
+      '24,000mAh with 140W output, enough to fast-charge a 16-inch laptop rather than trickle it. The display shows exactly what is going in and out.',
+    feature1: '24,000mAh, 140W output',
+    feature2: 'Charges a 16" laptop',
+    feature3: 'Live wattage display',
   },
   {
-    name: 'Samsung T7 Shield 2TB',
+    slug: 'halden-vault-2tb',
+    name: 'Halden Vault 2TB',
     categories: 'accessories',
-    price: 159,
+    price: 139,
     rating: 4,
-    quantity: 17,
+    quantity: 19,
+    images: 1,
     description:
-      'Rugged portable SSD, 1050MB/s read, IP65 rated and drop-tested to 3m. Hardware AES-256 encryption.',
+      'A portable SSD built to be carried badly. 1050MB/s reads, rated against dust and water, and tested to survive a three metre drop.',
     feature1: '1050MB/s read, 1000MB/s write',
-    feature2: 'IP65, 3m drop resistance',
+    feature2: 'IP65, 3m drop tested',
     feature3: 'AES-256 hardware encryption',
   },
   {
-    name: 'CalDigit TS4 Thunderbolt Dock',
+    slug: 'halden-hub-18',
+    name: 'Halden Hub 18',
     categories: 'accessories',
-    price: 379,
+    price: 299,
     rating: 5,
-    quantity: 8,
+    quantity: 11,
+    images: 1,
     description:
-      'Eighteen ports and 98W host charging over a single Thunderbolt 4 cable. Drives two 6K displays. The one-cable desk setup.',
+      'Eighteen ports and 98W of charging down one cable, driving two 6K displays. The dock that turns a laptop into a desk setup.',
     feature1: '18 ports, 98W host charging',
-    feature2: 'Dual 6K @ 60Hz support',
-    feature3: '2.5GbE, SD 4.0, 3x TB4',
+    feature2: 'Dual 6K at 60Hz',
+    feature3: '2.5GbE, SD 4.0, 3 x USB-C',
+  },
+  {
+    slug: 'halden-view-27',
+    name: 'Halden View 27',
+    categories: 'accessories',
+    price: 449,
+    rating: 5,
+    quantity: 9,
+    images: 1,
+    description:
+      'A 27-inch 4K panel that arrives calibrated, with a single USB-C cable carrying video, data and 90W of charge to the laptop.',
+    feature1: '27" 4K IPS, 99% sRGB',
+    feature2: 'USB-C with 90W passthrough',
+    feature3: 'Height, tilt and pivot stand',
+  },
+  {
+    slug: 'halden-track-watch',
+    name: 'Halden Track Watch',
+    categories: 'accessories',
+    price: 199,
+    rating: 4,
+    quantity: 23,
+    images: 1,
+    description:
+      'A fitness watch with a week of battery instead of a day. Tracks the usual metrics, and the screen stays readable in direct sun.',
+    feature1: '7-day battery, always-on display',
+    feature2: 'GPS, heart rate, sleep tracking',
+    feature3: '5ATM water resistance',
+  },
+  {
+    slug: 'halden-frame-cam',
+    name: 'Halden Frame Cam',
+    categories: 'accessories',
+    price: 129,
+    rating: 4,
+    quantity: 21,
+    images: 1,
+    description:
+      'A 4K webcam that handles a badly lit room. Auto-framing keeps you centred when you move, and the privacy shutter is physical.',
+    feature1: '4K 30fps, 1080p 60fps',
+    feature2: 'Auto-framing and light correction',
+    feature3: 'Physical privacy shutter',
   },
 ];
 
@@ -280,10 +581,10 @@ async function main() {
     console.log(`wiped ${deletedCount} existing products`);
   }
 
-  const docs = products.map((p) => ({
+  const docs = products.map(({ slug, images, ...p }) => ({
     ...p,
     instock: p.quantity > 0,
-    files: images(p.name),
+    files: filesFor({ slug, images, name: p.name }),
   }));
 
   const inserted = await Product.insertMany(docs);
@@ -294,6 +595,11 @@ async function main() {
     return acc;
   }, {});
   console.log('  by category:', counts);
+  console.log(
+    FORCE_PLACEHOLDERS
+      ? '  images: placehold.co'
+      : '  images: /products/<slug>-N.svg from site-project/public/products/'
+  );
 
   if (MAKE_ADMIN) {
     const existing = await User.findOne({ email: ADMIN.email });

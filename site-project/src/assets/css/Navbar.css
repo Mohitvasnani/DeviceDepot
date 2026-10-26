@@ -14,29 +14,30 @@
   padding-inline: var(--dd-4);
 }
 
+/* The real lockup, not type pretending to be one. width/height are set on
+   the element so the bar does not reflow while the SVG loads. */
 .navbar-brand {
-  font-family: var(--dd-font-condensed);
-  font-size: var(--dd-text-lg);
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  color: var(--dd-surface) !important;
+  display: flex;
+  align-items: center;
   padding: 0;
+  margin: 0;
 }
 
-.navbar-brand::after {
-  content: '';
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  margin-left: 3px;
-  background: var(--dd-signal);
+.navbar-brand img {
+  display: block;
+  height: 34px;
+  width: auto;
+}
+
+@media (max-width: 575.98px) {
+  .navbar-brand img { height: 28px; }
 }
 
 /* Direct children only. A descendant selector here also matches the anchors
    inside .dropdown-menu, which sits on white, and the !important made them
    unreadable. */
 .navbar .navbar-nav > .nav-item > .nav-link {
-  color: #c9ced5;
+  color: #c6c3b9;
   padding: var(--dd-2) var(--dd-3);
   font-size: var(--dd-text-sm);
   font-weight: 500;
@@ -152,4 +153,27 @@
   color: var(--dd-ink);
   font-size: var(--dd-text-xs);
   font-weight: 700;
+}
+
+/* Cart count. Yellow on ink is the same pairing the rest of the bar uses. */
+.dd-cart-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.dd-cart-count {
+  margin-left: var(--dd-2);
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--dd-signal);
+  color: var(--dd-ink);
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
 }

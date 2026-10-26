@@ -1,35 +1,21 @@
 import { Navigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
+import { useSelector } from 'react-redux';
+import { selectAuth } from '../../store/authSlice';
 
-
+// Reads the same state as everything else rather than decoding the token
+// again. An expired token is cleared when the store is created.
 const ProtectedRoute = ({ children, adminOnly = false }) => {
-    const token = localStorage.getItem('token');
+    const { isAuthenticated, role, expiresAt } = useSelector(selectAuth);
 
-    if (!token) {
-        return <Navigate to='/loginregister' />;
+    if (!isAuthenticated || (expiresAt && expiresAt < Date.now())) {
+        return <Navigate to="/loginregister" replace />;
     }
 
-    try {
-        const decoded = jwtDecode(token);
-        
-        const isExpired = decoded.exp * 1000 < Date.now();
-        if (isExpired) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('email');
-            return <Navigate to='/loginregister' />;
-        }
-
-        if (adminOnly && decoded.role !== 'admin') {
-            return <Navigate to='/home' />;
-        }
-
-        return children;
-
-    } catch (err) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('email');
-        return <Navigate to='/loginregister' />;
+    if (adminOnly && role !== 'admin') {
+        return <Navigate to="/home" replace />;
     }
+
+    return children;
 };
 
 export default ProtectedRoute;

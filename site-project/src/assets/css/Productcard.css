@@ -24,6 +24,7 @@
    as a row rather than a ragged edge. */
 
 .dd-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -31,19 +32,77 @@
   border: 1px solid var(--dd-line-soft);
   border-radius: var(--dd-radius-lg);
   overflow: hidden;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: var(--dd-shadow);
+  /* Only transform. Animating box-shadow repaints the card on every frame,
+     which is what made scrolling past a grid of these feel heavy. The hover
+     shadow is a pseudo-element whose opacity is animated instead, and
+     opacity is composited rather than painted. */
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+.dd-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: var(--dd-shadow-up);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dd-card:hover::after,
+.dd-card:focus-within::after { opacity: 1; }
+
+/* The yellow edge is the hover signal, not a glow. It is the same marker the
+   navbar uses for "this one", so hovering reads as selecting. */
+.dd-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--dd-signal);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.3, 1);
+  z-index: 2;
 }
 
 .dd-card:hover,
 .dd-card:focus-within {
-  border-color: var(--dd-line);
-  box-shadow: var(--dd-shadow-up);
+  transform: translateY(-4px);
+}
+
+.dd-card:hover::before,
+.dd-card:focus-within::before { transform: scaleX(1); }
+
+/* Reveal on first scroll into view. The class is added by Productcard on
+   mount, so if the script never runs the cards are simply visible. */
+.dd-card.dd-reveal {
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+.dd-card.dd-reveal.is-in {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dd-card.dd-reveal { opacity: 1; transform: none; }
+  .dd-card,
+  .dd-card::before,
+  .dd-card::after,
+  .dd-card-imgbtn img { transition: none; }
 }
 
 /* --- media -------------------------------------------------------------- */
 
 .dd-card-media {
   position: relative;
+  overflow: hidden;
   background: var(--dd-surface-2);
   border-bottom: 1px solid var(--dd-line-soft);
 }
@@ -63,7 +122,11 @@
   aspect-ratio: 4 / 3;
   object-fit: contain;
   padding: var(--dd-4);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.3, 1);
 }
+
+/* Scales inside the well, which has overflow hidden, so nothing reflows */
+.dd-card:hover .dd-card-imgbtn img { transform: scale(1.05); }
 
 /* Category chip: solid ink so it stays readable over a light product shot,
    which the old translucent grey badge did not. */

@@ -52,7 +52,7 @@
 }
 
 .dd-hero p {
-  color: #b9c0c8;
+  color: #bdb9ad;
   font-size: var(--dd-text-md);
   max-width: 46ch;
   margin-bottom: var(--dd-6);
@@ -83,7 +83,7 @@
   font-family: var(--dd-font);
   font-size: var(--dd-text-xs);
   font-weight: 500;
-  color: #8d959e;
+  color: #86837a;
 }
 
 .dd-hero-link:hover,
