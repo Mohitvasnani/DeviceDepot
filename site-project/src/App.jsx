@@ -63,7 +63,7 @@ function App() {
             <Route path="userprofile" element={<UserProfile />} />
             <Route path="trackorder" element={<TrackOrders />} />
           </Route>
-          <Route path='/view-product' element={<Productdisplay />}></Route>
+          <Route path='/products/:id' element={<Productdisplay />}></Route>
           <Route path="/enter-email" element={<EnterEmail />} />
           <Route path="/enter-otp" element={<EnterOTP />} />
           <Route path="/enter-new-password" element={<EnterNewPassword />} />

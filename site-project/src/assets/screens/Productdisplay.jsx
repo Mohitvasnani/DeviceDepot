@@ -1,29 +1,97 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useContext, useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import '../css/productdisplay.css';
 import { toast } from 'react-toastify';
+import { ProductsContext } from '../components/Productcontext';
 
 const API_URL = import.meta.env.VITE_API_URL;
 const FALLBACK = 'https://placehold.co/600x600/f3f1ea/6f6d64/png?text=No+image';
 
 function Productdisplay() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { likedProducts } = useContext(ProductsContext);
+
+  // Loaded from the backend by id, not from React Router navigation state -
+  // that meant a direct link, a refresh, or opening in a new tab all showed
+  // an empty page even though the product existed. See REVIEW.md item 5.
+  const [product, setProduct] = useState(null);
+  const [status, setStatus] = useState('loading'); // loading | ready | not-found | error
   const [liked, setLiked] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
-  const location = useLocation();
-  const navigate = useNavigate();
-  const product = location.state?.productData;
   const token = localStorage.getItem('token');
 
-  if (!product) {
+  useEffect(() => {
+    let cancelled = false;
+    setStatus('loading');
+    setSelectedImage(0);
+
+    axios.get(`${API_URL}/api/product/${id}`)
+      .then((res) => {
+        if (cancelled) return;
+        setProduct(res.data);
+        setStatus('ready');
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        if (err.response?.status === 404) {
+          setStatus('not-found');
+        } else {
+          console.error('Error fetching product:', err);
+          setStatus('error');
+        }
+      });
+
+    return () => { cancelled = true; };
+  }, [id]);
+
+  // Reflect whether this product is already saved, once the shared liked
+  // list (fetched once at app load) and this product are both in.
+  useEffect(() => {
+    if (product) setLiked(Boolean(likedProducts[product._id]));
+  }, [product, likedProducts]);
+
+  if (status === 'loading') {
+    return (
+      <div className="parent_displayitem">
+        <div className="dd-detail">
+          <div className="dd-gallery">
+            <div className="dd-skeleton dd-skeleton-img" style={{ width: '100%', aspectRatio: '1 / 1' }}></div>
+          </div>
+          <div className="dd-detail-info">
+            <div className="dd-skeleton dd-skeleton-line"></div>
+            <div className="dd-skeleton dd-skeleton-line short"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === 'not-found') {
     return (
       <div className="parent_displayitem">
         <div className="dd-empty">
-          <h4>Nothing to show here</h4>
-          <p>Product pages open from the catalogue, so this one has no product attached. Refreshing the page loses it.</p>
+          <h4>We could not find that product</h4>
+          <p>It may have been removed, or the link is wrong.</p>
           <button className="btn btn-primary" onClick={() => navigate('/home')}>
             Browse the catalogue
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === 'error') {
+    return (
+      <div className="parent_displayitem">
+        <div className="dd-empty">
+          <h4>This product did not load</h4>
+          <p>
+            The server may still be waking up. The free tier sleeps after a period
+            of inactivity and can take up to a minute to respond.
+          </p>
+          <button className="btn btn-primary" onClick={() => window.location.reload()}>Try again</button>
         </div>
       </div>
     );
@@ -39,7 +107,7 @@ function Productdisplay() {
     try {
       const res = await axios.post(
         `${API_URL}/api/product/addcart`,
-        { productId: product._id, email: userEmail },
+        { productId: product._id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       res.data.success
@@ -58,14 +126,14 @@ function Productdisplay() {
     try {
       if (liked) {
         await axios.delete(`${API_URL}/api/product/removelike`, {
-          data: { productId: product._id, email: userEmail },
+          data: { productId: product._id },
           headers,
         });
         toast.info('Removed from saved items');
       } else {
         await axios.post(
           `${API_URL}/api/product/addlike`,
-          { productId: product._id, email: userEmail },
+          { productId: product._id },
           { headers }
         );
         toast.success('Saved');

@@ -56,36 +56,29 @@ function LoginRegisterPage() {
 
         setRegBusy(true);
         try {
-            const { data } = await axios.post(`${API_URL}/api/user/register`, {
+            // The register endpoint now answers with the right status code
+            // (201 created, 400 bad input, 409 duplicate email/phone), so
+            // that decides - no more guessing from the response body.
+            await axios.post(`${API_URL}/api/user/register`, {
                 name: reg.name.trim(),
                 email: reg.email.trim().toLowerCase(),
                 phone: reg.phone.trim() || undefined,
                 password: reg.password,
             });
 
-            // The register endpoint answers 200 even when the insert fails, so
-            // the response body is what decides, not the status code.
-            // See REVIEW.md item 2.
-            if (!data || !data._id) {
-                const duplicate = data?.code === 11000 || /duplicate/i.test(data?.errmsg || data?.message || '');
-                setRegErrors({
-                    form: duplicate
-                        ? 'An account with that email or phone already exists. Sign in instead.'
-                        : 'That did not save. Check the details and try again.',
-                });
-                return;
-            }
-
             toast.success('Account created. Sign in to continue.');
             setLogin({ email: reg.email.trim().toLowerCase(), password: '' });
             setReg({ name: '', email: '', phone: '', password: '' });
             setIsRegisterActive(false);
         } catch (err) {
+            const status = err.response?.status;
             setRegErrors({
                 form:
-                    err.response?.status >= 500
+                    status === 409
+                        ? 'An account with that email or phone already exists. Sign in instead.'
+                        : status >= 500
                         ? 'The server is not responding. It may still be waking up, try again in a minute.'
-                        : 'That did not save. Check the details and try again.',
+                        : err.response?.data?.error || 'That did not save. Check the details and try again.',
             });
         } finally {
             setRegBusy(false);

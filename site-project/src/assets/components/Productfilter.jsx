@@ -9,7 +9,7 @@ const ProductFilter = ({ category }) => {
     const navigate = useNavigate();
 
     const handleClick = (product) => {
-        navigate('/view-product', { state: { productData: product } });
+        navigate(`/products/${product._id}`);
     };
 
     if (loading) {

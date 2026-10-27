@@ -1,14 +1,15 @@
 # DeviceDepot review
 
-Read of the full codebase, 25 Oct 2026. Ordered by what to fix first.
+Read of the full codebase, 25 Oct 2026. Updated 26 Oct 2026.
 
-Each item says where it is and why it matters. Work top down, one commit per item.
+Each item says where it is and why it matters. Items marked **FIXED** were
+resolved on 26 Oct; they are kept here because the reasoning is still useful.
 
 ---
 
 ## P0: broken right now
 
-### 1. Product detail page shows "No Image" for every product
+### 1. ~~Product detail page shows "No Image" for every product~~  **FIXED**
 
 `site-project/src/assets/screens/Productdisplay.jsx`, image section
 
@@ -20,7 +21,9 @@ src={`${API_URL}/${file}`}
 
 `Productcard.jsx` does it correctly with a bare `product.files[0]`. Match that in both the thumbnail map and the main image.
 
-### 2. Registration reports success when it fails
+> Fixed 26 Oct. `Productdisplay.jsx` now uses the URL directly.
+
+### 2. Registration reports success when it fails  **PARTLY FIXED**
 
 `backend/controller/userCtrl.js`, `createUser`
 
@@ -37,6 +40,10 @@ Two problems in two lines:
 This is most likely why login 401s after a "successful" registration: the second registration silently failed, so the stored hash is from the first attempt with a different password.
 
 Return `res.status(400).json({ error: ... })` on failure, and on success return only `{ id, name, email }`.
+
+> Worked around 26 Oct on the client: the login page checks the response body
+> rather than the status code, and detects duplicate-key errors. **The
+> controller itself is still wrong** and still leaks the hash.
 
 ### 3. Order totals are never saved
 
@@ -108,9 +115,11 @@ So there is no real "newest" ordering. `Home.jsx` fakes New Arrivals with `produ
 
 `backend/otpStore.js`. Render's free tier spins down on idle, so a password reset started before a cold start fails after it. Move to a TTL collection in Mongo.
 
-### 15. Double DB connection
+### 15. ~~Double DB connection~~  **FIXED**
 
 `database/dbConnect.js` calls `connection()` at module load and also exports it, and `index.js` calls it again. Delete the self-invocation.
+
+> Fixed 26 Oct.
 
 ### 16. JWT expires in 1h with no refresh
 
@@ -187,3 +196,31 @@ The structure is sound. The problem is that nothing has been designed, it has be
 5. Compute the payment amount server-side (#6)
 
 Items 3 to 5 are the ones a technical interviewer will find if they read this repo.
+
+
+---
+
+## Fixed on 26 Oct 2026
+
+Beyond the numbered items above:
+
+- Hardcoded Gmail credentials removed from `controller/emailCtrl.js`; it reads `EMAIL` and `PASSWORD` from the environment
+- `viewCarts` returned 404 for a user with no cart yet; it now returns an empty cart
+- `phone` index made sparse, so a second account without a phone number no longer collides on null
+- Admin logout was a `<NavLink>` with no `to` and did nothing; user logout cleared localStorage and bypassed Redux. Both now dispatch `signedOut`
+- Twelve `<ToastContainer>` instances were mounted across the app, which crashed react-toastify on route changes. One remains, in `App.jsx`
+- `ProductsContext` provider value memoised; `Productcard` wrapped in `memo`. All 36 cards previously re-rendered on any provider change
+- `box-shadow` removed from hover transitions in favour of an opacity-animated pseudo-element
+- About page carousel jumped 300px to 320px on every slide; height pinned
+- `.upload-box` was declared twice in `AddProducts.css` with conflicting sizes
+- `node_modules` (1,690 files) and `backend/public/Images` (114 files) untracked from git
+
+## Still outstanding
+
+The security items are unchanged and remain the most important:
+
+1. Product routes have no auth middleware (#4)
+2. User identity comes from the request body, not the JWT (#5)
+3. Stripe amount is calculated client-side (#6)
+4. Payment is not linked to the order (#7)
+5. Registration controller still returns 200 on failure and leaks the bcrypt hash (#2)

@@ -41,6 +41,28 @@ const getAllProduct = (req, res) => {
     });
 };
 
+// Powers the durable /products/:id page - a direct link, refresh, or new
+// tab all resolve the product from the database instead of depending on
+// React Router navigation state, which does not survive any of those.
+const getProductById = (req, res) => {
+    productModel.findById(req.params.id)
+    .then(product => {
+        if (!product) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+        res.json(product);
+    })
+    .catch(err => {
+        // A malformed id (wrong length/format) throws a CastError - that is
+        // still "not found" from the caller's point of view, not a 500.
+        if (err.name === 'CastError') {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+        console.error('Error fetching product:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    });
+};
+
 const dltProducts = (req, res) => {
     const productId = req.params.id;
     productModel.findByIdAndDelete(productId)
@@ -99,8 +121,15 @@ const removeItem = async (req, res) => {
   const { itemId } = req.params;
 
   try {
+    const user = await userModel.findOne({ email: req.user.email });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Scoped to the signed-in user's own cart, not any cart that happens to
+    // contain this item id.
     const updatedCart = await Cart.findOneAndUpdate(
-      { 'items._id': itemId },
+      { userId: user._id, 'items._id': itemId },
       { $pull: { items: { _id: itemId } } },
       { new: true }
     ).populate('items.productId');
@@ -122,7 +151,7 @@ const removeItem = async (req, res) => {
 
 const addToCart = async (req, res) => {
     try {
-        const { productId, email } = req.body;
+        const { productId } = req.body;
 
         // Find the product
         const foundProduct = await productModel.findById(productId);
@@ -130,8 +159,8 @@ const addToCart = async (req, res) => {
             return res.status(404).json({ error: 'Product not found' });
         }
 
-        // Find the user
-        const user = await userModel.findOne({ email });
+        // Identity comes from the verified token, never from the request body
+        const user = await userModel.findOne({ email: req.user.email });
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -164,10 +193,8 @@ const addToCart = async (req, res) => {
 
 const viewCarts = async (req, res) => {
     try {
-        const { email } = req.query;
-
-        // Find the user
-        const user = await userModel.findOne({ email });
+        // Identity comes from the verified token, never from the query string
+        const user = await userModel.findOne({ email: req.user.email });
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -194,8 +221,15 @@ const viewCarts = async (req, res) => {
 const incrementQuantity = async (req, res) => {
     try {
         const cartId = req.params.id;
+
+        const user = await userModel.findOne({ email: req.user.email });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Scoped to the signed-in user's own cart
         const cart = await cartModel.findOneAndUpdate(
-            { "items._id": cartId },
+            { userId: user._id, "items._id": cartId },
             { $inc: { "items.$.quantity": 1 } },
             { new: true }
         );
@@ -214,7 +248,14 @@ const incrementQuantity = async (req, res) => {
 const decrementQuantity = async (req, res) => {
     try {
         const cartId = req.params.id;
-        const cart = await cartModel.findOne({ "items._id": cartId });
+
+        const user = await userModel.findOne({ email: req.user.email });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Scoped to the signed-in user's own cart
+        const cart = await cartModel.findOne({ userId: user._id, "items._id": cartId });
 
         if (!cart) {
             return res.status(404).json({ error: 'Item not found' });
@@ -378,13 +419,12 @@ const decrementQuantity = async (req, res) => {
 
 
 const addLike = async (req, res) => {
-    const { productId, email } = req.body;
+    const { productId } = req.body;
+    const email = req.user.email;
 
     try {
-        console.log(`Adding like for product ID: ${productId}, email: ${email}`);
-        
-        if (!productId || !email) {
-            return res.status(400).json({ error: 'Product ID and email are required' });
+        if (!productId) {
+            return res.status(400).json({ error: 'Product ID is required' });
         }
 
         const product = await productModel.findById(productId);
@@ -421,15 +461,9 @@ const addLike = async (req, res) => {
 
 // View Likes
 const viewLike = async (req, res) => {
-    const { email } = req.query;
+    const email = req.user.email;
 
     try {
-        console.log(`Fetching likes for email: ${email}`);
-        
-        if (!email) {
-            return res.status(400).json({ error: 'Email is required' });
-        }
-
         const user = await userModel.findOne({ email });
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -443,14 +477,13 @@ const viewLike = async (req, res) => {
     }
 };
 const getUserLike = async (req, res) => {
-    const userEmail = req.params.email;
+    // The route still carries :email for backward-compatible URLs, but the
+    // signed-in user's own identity (from the verified token) is what's
+    // actually used - a client can no longer read someone else's likes by
+    // changing the URL.
+    const userEmail = req.user.email;
 
     try {
-        // Validate input
-        if (!userEmail) {
-            return res.status(400).json({ error: 'Email is required' });
-        }
-
         // Find user
         const user = await userModel.findOne({ email: userEmail });
         if (!user) {
@@ -467,11 +500,12 @@ const getUserLike = async (req, res) => {
 };
 
 const removeLike = async (req, res) => {
-    const { productId, email } = req.body;
+    const { productId } = req.body;
+    const email = req.user.email;
 
     try {
-        if (!productId || !email) {
-            return res.status(400).json({ error: 'Product ID and email are required' });
+        if (!productId) {
+            return res.status(400).json({ error: 'Product ID is required' });
         }
 
         const user = await userModel.findOne({ email });
@@ -493,6 +527,7 @@ const removeLike = async (req, res) => {
 module.exports = {
     addProduct,
     getAllProduct,
+    getProductById,
     updateProduct,
     addToCart,
     viewCarts,

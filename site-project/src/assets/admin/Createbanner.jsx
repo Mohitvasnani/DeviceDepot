@@ -36,7 +36,10 @@ function CreateBanner() {
         formData.append('description', newBanner.description);
         formData.append('file', newBanner.file);
 
-        axios.post(`${API_URL}/api/banner/upload`, formData)
+        const token = localStorage.getItem('token');
+        axios.post(`${API_URL}/api/banner/upload`, formData, {
+            headers: { Authorization: `Bearer ${token}` }
+        })
             .then(response => {
                 console.log(response.data);
                 setNewBanner({

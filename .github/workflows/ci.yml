@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-tests:
+    name: Backend tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npm test
+        env:
+          # mongodb-memory-server supplies its own throwaway database for
+          # these tests - no real Atlas credentials are used or needed here.
+          CI: true
+
+  frontend-build:
+    name: Frontend build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site-project
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: site-project/package-lock.json
+      - run: npm ci
+      - run: npm run build
+        env:
+          # Placeholder values so the build does not fail on a missing env
+          # file - nothing here talks to a real backend or Stripe account.
+          VITE_API_URL: http://localhost:8080
+          VITE_STRIPE_PUBLIC_KEY: pk_test_placeholder
+
+  frontend-lint:
+    name: Frontend lint (non-blocking)
+    runs-on: ubuntu-latest
+    # There is existing lint debt unrelated to any given change (mostly
+    # unused React imports and missing prop-types across older files).
+    # This job reports it without failing the build - see CLAUDE.md if
+    # you want to clean it up and flip this back to blocking.
+    continue-on-error: true
+    defaults:
+      run:
+        working-directory: site-project
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: site-project/package-lock.json
+      - run: npm ci
+      - run: npm run lint

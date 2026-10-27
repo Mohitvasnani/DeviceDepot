@@ -53,26 +53,74 @@
     margin: 0 5px;
   }
   
-  .qty-btn, .remove-btn, .checkout-btn {
-    background-color: #2196f3;
-    color: white;
-    border: none;
-    border-radius: 4px;
+  /* Branded to match the rest of the site (see index.css tokens) instead
+     of the generic Material blue/red these started as. */
+  .qty-btn {
+    background-color: var(--dd-surface);
+    color: var(--dd-ink);
+    border: 1px solid var(--dd-line);
+    border-radius: var(--dd-radius);
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    line-height: 1;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .qty-btn:hover:not(:disabled) {
+    background-color: var(--dd-surface-2);
+    border-color: var(--dd-ink);
+  }
+
+  .qty-btn:disabled {
+    color: var(--dd-ink-faint);
+    cursor: not-allowed;
+  }
+
+  .remove-btn {
+    background-color: transparent;
+    color: var(--dd-alert);
+    border: 1px solid var(--dd-alert);
+    border-radius: var(--dd-radius);
     padding: 8px 12px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.15s ease, color 0.15s ease;
   }
-  
-  .qty-btn:hover, .remove-btn:hover, .checkout-btn:hover {
-    background-color: #1976d2;
-  }
-  
-  .remove-btn {
-    background-color: #f44336;
-  }
-  
+
   .remove-btn:hover {
-    background-color: #d32f2f;
+    background-color: var(--dd-alert);
+    color: #fff;
+  }
+
+  .checkout-btn {
+    background-color: var(--dd-signal);
+    color: var(--dd-ink);
+    border: 1px solid var(--dd-signal);
+    border-radius: var(--dd-radius);
+    padding: 8px 12px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(20, 20, 18, 0.08);
+    transition: background-color 0.15s ease, box-shadow 0.18s ease, transform 0.18s ease;
+  }
+
+  .checkout-btn:hover:not(:disabled) {
+    background-color: var(--dd-signal-deep);
+    border-color: var(--dd-signal-deep);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(245, 206, 46, 0.55);
+  }
+
+  .checkout-btn:disabled {
+    background-color: var(--dd-line);
+    border-color: var(--dd-line);
+    color: var(--dd-ink-faint);
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
   }
   
   .cart-totals {
@@ -108,11 +156,5 @@
   .checkout-btn {
     padding: 12px 20px;
     font-size: 16px;
-    font-weight: bold;
-    background-color: #4caf50;
-  }
-  
-  .checkout-btn:hover {
-    background-color: #388e3c;
   }
   

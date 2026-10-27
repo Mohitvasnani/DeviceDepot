@@ -28,7 +28,17 @@ const orderSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    totalammount:Number,
+    // Was `totalammount` - the controller always wrote `totalAmount`, so
+    // every order saved with this field empty. Fixed name, and it is now
+    // always server-computed, never taken from the client as-is.
+    totalAmount: Number,
+    // Stripe PaymentIntent id backing this order. Unique+sparse so the
+    // same successful payment can never be turned into two orders.
+    paymentIntentId: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
     orderTime: {
         type: Date,
         default: Date.now

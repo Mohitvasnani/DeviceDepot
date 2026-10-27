@@ -34,9 +34,12 @@ export const ProductsProvider = ({ children }) => {
 
     const fetchLikedProducts = useCallback(async () => {
         const userEmail = localStorage.getItem('email');
-        if (!userEmail) return;
+        const token = localStorage.getItem('token');
+        if (!userEmail || !token) return;
         try {
-            const response = await axios.get(`${API_URL}/api/product/getlike/${userEmail}`);
+            const response = await axios.get(`${API_URL}/api/product/getlike/${userEmail}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             const likes = response.data.reduce((acc, product) => {
                 acc[product.productId] = true;
                 return acc;
@@ -58,14 +61,16 @@ export const ProductsProvider = ({ children }) => {
 
     const addToCart = useCallback(async (productId) => {
         const userEmail = localStorage.getItem('email');
-        if (!userEmail) {
+        const token = localStorage.getItem('token');
+        if (!userEmail || !token) {
             console.error('User email not found in local storage.');
             return;
         }
         try {
             const response = await axios.post(`${API_URL}/api/product/addcart`, {
-                productId,
-                email: userEmail
+                productId
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
                 console.log('Product added to cart successfully!');
@@ -79,14 +84,16 @@ export const ProductsProvider = ({ children }) => {
 
     const addLike = useCallback(async (productId) => {
         const userEmail = localStorage.getItem('email');
-        if (!userEmail) {
+        const token = localStorage.getItem('token');
+        if (!userEmail || !token) {
             console.error('Email not saved');
             return;
         }
         try {
             const response = await axios.post(`${API_URL}/api/product/addlike`, {
-                productId,
-                email: userEmail
+                productId
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
                 console.log('Product liked');
@@ -101,13 +108,15 @@ export const ProductsProvider = ({ children }) => {
 
     const removeLike = useCallback(async (productId) => {
         const userEmail = localStorage.getItem('email');
-        if (!userEmail) {
+        const token = localStorage.getItem('token');
+        if (!userEmail || !token) {
             console.error('Email not saved');
             return;
         }
         try {
             const response = await axios.delete(`${API_URL}/api/product/removelike`, {
-                data: { productId, email: userEmail }
+                data: { productId },
+                headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
                 console.log('Product unliked');

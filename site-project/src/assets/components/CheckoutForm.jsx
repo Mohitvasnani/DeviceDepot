@@ -24,7 +24,9 @@ function CheckoutForm({ onSuccess }) {
                 toast.error(error.message);
             } else if (paymentIntent.status === 'succeeded') {
                 toast.success('Payment successful!');
-                onSuccess(); // place the order after payment
+                // The backend needs the PaymentIntent id to verify this
+                // payment server-side before it will create an order.
+                onSuccess(paymentIntent.id);
             }
         } catch (err) {
             toast.error('Payment failed. Please try again.');

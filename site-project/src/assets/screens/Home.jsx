@@ -49,7 +49,7 @@ function Home() {
   }, []);
 
   const handleProductClick = (product) => {
-    navigate('/view-product', { state: { productData: product } });
+    navigate(`/products/${product._id}`);
   };
 
   const countIn = (slug) => products.filter((p) => p.categories === slug).length;

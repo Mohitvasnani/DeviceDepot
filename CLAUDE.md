@@ -36,9 +36,20 @@ cd backend && node scripts/check.js
 
 # regenerate the product and About artwork
 cd site-project && node scripts/make-product-art.mjs
+
+# backend tests (Jest + Supertest against an in-memory MongoDB - no Atlas
+# connection needed or used)
+cd backend && npm test
 ```
 
-There are no tests. Do not claim a change is verified without running the app.
+Backend tests cover auth middleware, admin-only route enforcement, cart/profile/order
+ownership scoping, registration response safety, cart pricing, and the checkout flow
+(payment verification, idempotency, stock decrement/rollback) - see `backend/tests/`.
+There is no frontend test suite yet. CI (`.github/workflows/ci.yml`) runs backend tests
+and a frontend build on push/PR; frontend lint runs too but is non-blocking because of
+pre-existing lint debt (mostly unused `React` imports and missing prop-types) unrelated
+to any given change. Do not claim a change is verified without either a passing test or
+having actually run the app.
 
 ## Environment
 

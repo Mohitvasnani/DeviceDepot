@@ -2,17 +2,45 @@ const bcrypt = require('bcryptjs')
 const jwt = require("jsonwebtoken")
 const UserModel = require("../models/userModels");
 
+// Fields that are safe to send back to a client. Never include `password`
+// here - every response below is built from this shape, not from a raw
+// Mongoose document, so a password hash can't leak by accident.
+const toPublicUser = (user) => ({
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  phone: user.phone,
+  role: user.role,
+  admin: user.admin,
+  address1: user.address1,
+  address2: user.address2,
+  address3: user.address3,
+});
 
-// register page 
+// register page
 const createUser = (req, res) => {
   const { name, email, phone, password } = req.body;
-  console.log(req.body) 
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ error: 'name, email and password are required' });
+  }
+
   bcrypt.hash(password, 10)
     .then(hash => {
       UserModel.create({ name, email, phone, password: hash })
-        .then(user => res.json(user))
-        .catch(err => res.json(err))
-    }).catch(err => console.log(err.message))
+        .then(user => res.status(201).json({ success: true, user: toPublicUser(user) }))
+        .catch(err => {
+          // Duplicate email or phone
+          if (err.code === 11000) {
+            return res.status(409).json({ error: 'An account with that email or phone already exists' });
+          }
+          console.error('Error creating user:', err.message);
+          res.status(400).json({ error: 'Could not create account' });
+        })
+    }).catch(err => {
+      console.error('Error hashing password:', err.message);
+      res.status(500).json({ error: 'Internal Server Error' });
+    })
 }
 
 // login ki API
@@ -53,28 +81,26 @@ const userLogin = (req, res) => {
 }
 
 
-// get ALL user API
+// get ALL user API (admin only - route already enforces this)
 const getAllUsers = (req, res) => {
-  UserModel.find({})
+  UserModel.find({}).select('-password')
     .then(users => {
-      res.json(users);
+      res.json(users.map(toPublicUser));
     })
     .catch(error => {
       console.error('Error fetching users:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     });
 };
-// get a ONE user API
-const getUserById = (req, res) => {
-  console.log(`GET /getuser/${req.params.id} called`); // Log for debugging
-  
 
-  UserModel.findById(req.params.id.trim())
+// get a ONE user API (admin only - route already enforces this)
+const getUserById = (req, res) => {
+  UserModel.findById(req.params.id.trim()).select('-password')
     .then(user => {
       if (!user) {
         return res.status(404).json('User not found');
       }
-      res.json(user);
+      res.json(toPublicUser(user));
     })
     .catch(err => {
       console.error('Error fetching user:', err);
@@ -83,35 +109,18 @@ const getUserById = (req, res) => {
 }
 
 // logout user api
-const logout =(req, res)=>{
-  // Clear the user's session or token from the server-side
-    // Here, you might destroy the session, remove the token from the database, etc.
-
-    // For example, if using JWT, you may want to invalidate the token
-    // const token = req.cookies.token; // assuming token is stored in cookies
-    // Invalidate token logic goes here...
-
-    // Respond with success message
-    
-      // Handle logout logic, e.g., invalidate session or token
-      // res.status(200).json({ message: 'Logout successful' });
-      res.clearCookie('token'); // Clear the token cookie
-
-      // Respond with success message
-      res.status(200).json({ message: 'Logout successful' });
-    
-    
+const logout = (req, res) => {
+  res.clearCookie('token');
+  res.status(200).json({ message: 'Logout successful' });
 }
 
-const deleteUser = async (req,res)=>{
-   
-
-  const userId = req.params.id.trim(); // Trim the userId to remove any extraneous whitespace
-  console.log(`Deleting user with ID: "${userId}"`); // Log the trimmed userId for debugging
+// delete user (admin only - route already enforces this)
+const deleteUser = async (req, res) => {
+  const userId = req.params.id.trim();
 
   UserModel.findByIdAndDelete(userId)
-  .then(user => {
-    if (!user) {
+    .then(user => {
+      if (!user) {
         return res.status(404).json('User not found');
       }
       res.json({ message: 'User deleted successfully' });
@@ -120,39 +129,60 @@ const deleteUser = async (req,res)=>{
       console.error('Error deleting user:', err);
       res.status(500).json({
         message: 'Internal server error',
-        error: err.message,
       });
     });
 }
 
+// Fields a user is allowed to change about themselves. Email, password,
+// role and admin are deliberately excluded - email changes need their own
+// verified flow, password changes need bcrypt, and role/admin can only be
+// touched by manageRole, which is admin-only.
+const ALLOWED_SELF_UPDATE_FIELDS = ['name', 'phone', 'address1', 'address2', 'address3'];
 
+const pickAllowedUpdates = (body) => {
+  const update = {};
+  for (const field of ALLOWED_SELF_UPDATE_FIELDS) {
+    if (body[field] !== undefined) update[field] = body[field];
+  }
+  return update;
+};
+
+// Generic "update my own account" endpoint. Ownership is enforced against
+// the verified token, not the :id in the URL - req.params.id is only used
+// to confirm it actually points at the caller's own account.
 const updateUser = async (req, res) => {
   const userId = req.params.id;
-  const update = req.body;
 
   if (!userId) {
-    return res.json({ error: 'User ID needed' });
+    return res.status(400).json({ error: 'User ID needed' });
   }
 
   try {
+    const target = await UserModel.findById(userId);
+    if (!target) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    if (target.email !== req.user.email && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'You can only update your own account' });
+    }
+
+    const update = pickAllowedUpdates(req.body);
+
     const updatedUser = await UserModel.findByIdAndUpdate(
       userId,
       update,
       { new: true, runValidators: true }
     );
 
-    if (!updatedUser) {
-      return res.json({ error: 'User not found' });
-    }
-
-    res.json({ success: true, user: updatedUser });
+    res.json({ success: true, user: toPublicUser(updatedUser) });
   } catch (err) {
-    res.status(500).json({ error: 'An error occurred', details: err });
+    console.error('Error updating user:', err.message);
+    res.status(500).json({ error: 'An error occurred' });
   }
 };
 
-// manage role
-const manageRole = async (req,res) =>{
+// manage role (admin only - route already enforces this)
+const manageRole = async (req, res) => {
   try {
     const userId = req.params.id;
     const user = await UserModel.findById(userId);
@@ -166,55 +196,54 @@ const manageRole = async (req,res) =>{
     user.admin = user.admin === false ? true : false;
 
     await user.save();
-    console.log(user); // Debugging line
-    res.status(200).json({ message: 'User role updated successfully', user });
+    res.status(200).json({ message: 'User role updated successfully', user: toPublicUser(user) });
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error', error });
+    console.error('Error updating role:', error.message);
+    res.status(500).json({ message: 'Internal server error' });
   }
+}
 
 
-
-
-//   const {id} = req.params
-//   const {role} = req.body
-//   // UserModel.findByIdAndUpdate(id, { role, admin }, {new:true})
-//   // .then(user=>{
-//   //   res.json(user)
-//   // }).catch(err=>{
-//   //   res.json(err,"failed to change role")
-//   // })
- }
-
-
-// Fetch user profile by email
+// Fetch user profile by email - only the signed-in user's own profile
+// (or an admin's), never anyone's profile by guessing their email.
 const getUserProfile = async (req, res) => {
   const email = req.params.email;
+
+  if (email !== req.user.email && req.user.role !== 'admin') {
+    return res.status(403).json({ error: "You can only view your own profile" });
+  }
 
   try {
     const user = await UserModel.findOne({ email });
     if (!user) {
       return res.status(404).json('User not found');
     }
-    res.json(user);
+    res.json(toPublicUser(user));
   } catch (error) {
     console.error('Error fetching user profile:', error);
     res.status(500).json('Internal Server Error');
   }
 };
 
-// Update user profile
+// Update user profile - same ownership and allowlist rules as updateUser.
 const updateUserProfile = async (req, res) => {
   const userId = req.params.id;
-  const update = req.body;
 
   try {
-    const updatedUser = await UserModel.findByIdAndUpdate(userId, update, { new: true, runValidators: true });
-    if (!updatedUser) {
+    const target = await UserModel.findById(userId);
+    if (!target) {
       return res.status(404).json('User not found');
     }
-    res.json({ success: true, user: updatedUser });
+    if (target.email !== req.user.email && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'You can only update your own profile' });
+    }
+
+    const update = pickAllowedUpdates(req.body);
+
+    const updatedUser = await UserModel.findByIdAndUpdate(userId, update, { new: true, runValidators: true });
+    res.json({ success: true, user: toPublicUser(updatedUser) });
   } catch (error) {
-    console.error('Error updating user profile:', error);
+    console.error('Error updating user profile:', error.message);
     res.status(500).json('Internal Server Error');
   }
 };

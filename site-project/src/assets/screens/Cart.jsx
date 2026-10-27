@@ -36,7 +36,7 @@ const Cart = () => {
   const cartItems = useSelector(selectCartItems);
   const cartStatus = useSelector(selectCartStatus);
   const subtotal = useSelector(selectCartSubtotal);
-  const { token, email, isAuthenticated } = useSelector(selectAuth);
+  const { token, isAuthenticated } = useSelector(selectAuth);
   const loading = cartStatus === 'loading';
 
   useEffect(() => {
@@ -92,18 +92,16 @@ const Cart = () => {
     }
   };
 
-  const handlePaymentSuccess = async () => {
-    const totalAmount = subtotal;
-
+  const handlePaymentSuccess = async (paymentIntentId) => {
     try {
+      // The server re-prices the cart and verifies the payment itself -
+      // it no longer takes the total or status from this request.
       await axios.post(
         `${API_URL}/api/orders/purchase`,
         {
-          email,
-          status: 'pending',
           address,
-          totalAmount,
           file: cartItems[0]?.file,
+          paymentIntentId,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -113,7 +111,7 @@ const Cart = () => {
       setShowPayment(false);
       setTimeout(() => navigate('/userdash/trackorder'), 1500);
     } catch (error) {
-      toast.error('Order placement failed. Contact support.');
+      toast.error(error.response?.data?.error || 'Order placement failed. Contact support.');
     }
   };
 
@@ -250,7 +248,7 @@ const Cart = () => {
                     </Elements>
                   )}
                   <button
-                    className="btn btn-outline-secondary w-100 mt-2"
+                    className="btn btn-outline-dark w-100 mt-2"
                     onClick={() => setShowPayment(false)}
                   >
                     Back to Cart
