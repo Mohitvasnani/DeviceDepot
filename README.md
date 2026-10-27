@@ -5,7 +5,7 @@ A full-stack e-commerce store for consumer electronics. Browse laptops, phones a
 Originally built during a five-month internship at NetParam Technologies
 (February to June 2024), then independently rebuilt and extended in 2026.
 
-**Live:** [device-depot-gilt.vercel.app](https://device-depot-gilt.vercel.app) · API at [devicedepot.onrender.com](https://devicedepot.onrender.com)
+**Live:** [devicedepot.vercel.app](https://devicedepot.vercel.app) · API at [devicedepot.onrender.com](https://devicedepot.onrender.com)
 
 > The API is hosted on Render's free tier, which sleeps after inactivity. The first request can take up to a minute while the instance wakes.
 
