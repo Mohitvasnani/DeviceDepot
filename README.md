@@ -266,15 +266,7 @@ Render's free tier sleeps after about 15 minutes idle. `GET /health` exists to w
 
 ## Known limitations
 
-Documented rather than hidden. Tracked in [`REVIEW.md`](REVIEW.md) with fixes.
-
-- Product routes are not yet behind auth middleware
-- Registration returns HTTP 200 on failure; the client checks the response body instead
-- Several endpoints identify the user from the request body instead of the JWT
-- The Stripe amount is calculated client-side
-- Stock is not decremented on purchase
 - Reset codes are held in memory, so they are lost when the free-tier instance sleeps
-- No automated tests
 
 ## Licence
 
